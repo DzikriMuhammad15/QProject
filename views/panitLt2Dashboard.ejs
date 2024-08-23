@@ -208,15 +208,26 @@
 
                 const mudhohis = sapi[i].mudhohi;
                 mudhohis.forEach((mudhohi) => {
+
                   temp += `
               <hr>
               <h2 class="fs-5">${mudhohi.name}</h2>
-              <p>Alamat: ${mudhohi.alamat}</p>
-              <p>Status: ${
-                mudhohi.isDelivered ? "Delivered" : "Not Delivered"
-              }</p>
-              <p>Tertunda: ${mudhohi.isPostponed ? "Yes" : "No"}</p>
-            `;
+              <p>Alamat: ${mudhohi.alamat}</p>`
+              if(mudhohi.isPostponed && !mudhohi.isDelivered){
+                temp += `<p>Status: <b>Tertunda</b><p>`
+              }
+              else if(mudhohi.isDelivered && !mudhohi.isPostponed){
+                temp += `<p>Status: <b>Sudah dikirim</b><p><br>
+                  <p>Username pengirim: ${mudhohi.usernamePengirim}</p><br>
+                  <p>Bukti: </p> <br>
+                  <img src="${mudhohi.bukti}"
+                style="width: 300px; height: auto; border-radius: 15px; object-fit: cover;"
+                />
+                  `
+              }
+              else{
+                temp += `<p>Status: <b>Belum dikirim</b><p>`
+              }
                 });
 
                 temp += `</div></div></div>`;
@@ -242,15 +253,27 @@
 
                 const mudhohis = sapi[i].mudhohi;
                 mudhohis.forEach((mudhohi) => {
+                  console.log(mudhohi);
                   temp += `
               <hr>
               <h2 class="fs-5">${mudhohi.name}</h2>
-              <p>Alamat: ${mudhohi.alamat}</p>
-              <p>Status: ${
-                mudhohi.isDelivered ? "Delivered" : "Not Delivered"
-              }</p>
-              <p>Tertunda: ${mudhohi.isPostponed ? "Yes" : "No"}</p>
-            `;
+              <p>Alamat: ${mudhohi.alamat}</p>`
+
+              if(mudhohi.isPostponed && !mudhohi.isDelivered){
+                temp += `<p>Status: <b>Tertunda</b><p>`
+              }
+              else if(mudhohi.isDelivered && !mudhohi.isPostponed){
+                temp += `<p>Status: <b>Sudah dikirim</b><p><br>
+                  <p>Username pengirim: ${mudhohi.usernamePengirim}</p><br>
+                  <p>Bukti: </p> <br>
+                  <img src="${mudhohi.bukti}"
+                style="width: 300px; height: auto; border-radius: 15px; object-fit: cover;"
+                />
+                  `
+              }
+              else{
+                temp += `<p>Status: <b>Belum dikirim</b><p>`
+              }
                 });
 
                 temp += `</div></div></div>`;
@@ -304,8 +327,10 @@
                 idMudhohi: key,
                 ...mudhohiObj,
                 name: userObj,
-                isDelivered: sapi[key].isDelivered, // Menambahkan isDelivered
-                isPostponed: sapi[key].isPostponed, // Menambahkan isPostponed
+                isDelivered: sapi[key].isDelivered,
+                isPostponed: sapi[key].isPostponed,
+                bukti: sapi[key].bukti,
+                usernamePengirim: sapi[key].usernamePengirim
               });
             }
           }

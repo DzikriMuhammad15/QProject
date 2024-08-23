@@ -150,13 +150,19 @@
       crossorigin="anonymous"
     ></script>
     <script src="/scripts/changeStatusLt3Script.js"></script>
-    <script>
+    <script type="module">
       // Konfigurasi Firebase
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+      import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js";
+      import { getDatabase, ref as dbRef, set, push, onValue } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
 
       // Inisialisasi Firebase
       var firebaseConfig = <%- JSON.stringify(firebaseConfig) %>;
       firebase.initializeApp(firebaseConfig);
       const database = firebase.database();
+      const app = initializeApp(firebaseConfig);
+      const storage = getStorage(app);
+
 
       // Referensi ke path data sapi
       const sapiRef = database.ref("sapi/");
@@ -215,12 +221,38 @@
                     <div class="modal-footer">
                       <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                       <button type="button" class="btn btn-danger postponeDagingButton" data-idMudhohi="${mudhohi.idMudhohi}" data-idSapi="${mudhohi.noSapi}">Postpone</button>
-                      <button type="button" class="btn btn-primary deliverDagingButton" data-idMudhohi="${mudhohi.idMudhohi}" data-idSapi="${mudhohi.noSapi}">Deliver</button>
+                      <button type="button" class="btn btn-primary uploadGambarButton" data-idMudhohi="${mudhohi.idMudhohi}" data-idSapi="${mudhohi.noSapi}">Deliver</button>
                     </div>
                   </div>
                 </div>
               `;
               body.appendChild(modal);
+              const modalUploadGambar = document.createElement("div");
+              modalUploadGambar.className = "modal fade";
+              modalUploadGambar.setAttribute("id", `modalMudhohiUpload${mudhohi.idMudhohi}`);
+              modalUploadGambar.setAttribute("tabindex", "-1");
+              modalUploadGambar.setAttribute("aria-labelledby", "exampleModalLabel");
+              modalUploadGambar.setAttribute("aria-hidden", "true");
+              modalUploadGambar.innerHTML = `
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h1 class="modal-title fs-5" id="exampleModalLabel">${mudhohi.name}</h1>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                          <form id="uploadForm">
+                              <input type="file" id="imageFile${mudhohi.idMudhohi}" accept="image/*" required>
+                          </form>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                      <button type="button" class="btn btn-primary deliverDagingButton" data-idMudhohi="${mudhohi.idMudhohi}" data-idSapi="${mudhohi.noSapi}">Deliver</button>
+                    </div>
+                  </div>
+                </div>
+              `;
+              body.appendChild(modalUploadGambar);
             }
           }
           exploreSection.appendChild(projectContainer);
@@ -313,6 +345,67 @@
           // Update halaman dengan mudhohiList
           updateDataOnPage(mudhohiList);
 
+
+
+          // uploadGambarButton handler
+          const uploadGambarButton = document.querySelectorAll(".uploadGambarButton");
+          uploadGambarButton.forEach((button) => {
+            button.addEventListener("click", async (e) => {
+
+              e.preventDefault();
+              const idMudhohi = button.dataset.idmudhohi;
+              console.log(idMudhohi);
+            // tutup modal pertama
+            // Temukan elemen modal berdasarkan id mudhohi
+            const modalElement = document.getElementById(
+              `modalMudhohi${idMudhohi}`
+            );
+            // Pastikan modal diakses dengan aman
+            if (modalElement) {
+              // Jika menggunakan Bootstrap 5 dan modal instance diperlukan
+              const modalInstance =
+                bootstrap.Modal.getInstance(modalElement);
+              if (modalInstance) {
+                modalInstance.hide(); // Menutup modal dengan Bootstrap
+
+                // Berikan waktu agar Bootstrap menyelesaikan proses tutup modal
+                setTimeout(() => {
+                  // Hapus modal element jika perlu
+                  modalElement.classList.remove("show");
+                  modalElement.removeAttribute("aria-modal");
+                  modalElement.style.display = "none";
+
+                  // Hilangkan backdrop
+                  const modalBackdrop =
+                    document.querySelector(".modal-backdrop");
+                  if (modalBackdrop) {
+                    modalBackdrop.remove();
+                  }
+
+                  // Kembalikan scroll pada body
+                  document.body.classList.remove("modal-open");
+                  document.body.style = "";
+
+                  modalInstance.dispose(); // Hapus instance modal
+                }, 300); // Menunda selama 300ms
+              }
+            }
+
+            // buka modal upload
+            var myModal = new bootstrap.Modal(document.getElementById(`modalMudhohiUpload${idMudhohi}`), {
+              keyboard: false
+            });
+
+            // Buka modal secara otomatis
+            myModal.show();
+
+
+
+          })
+
+
+
+          })
           // deliverDagingButton handler
           const deliverDagingButton = document.querySelectorAll(
             ".deliverDagingButton"
@@ -321,62 +414,82 @@
             button.addEventListener("click", async (e) => {
               e.preventDefault();
               const idMudhohi = button.dataset.idmudhohi;
+              const fileInput = document.getElementById(`imageFile${idMudhohi}`);
+              const file = fileInput.files[0]
+              console.log(fileInput);
+              console.log(file);
               const idSapi = parseInt(button.dataset.idsapi);
               console.log({ idMudhohi, idSapi });
               console.log(button);
 
-              const url = "/panitLt3/deliver";
-              const data = { idSapi, idMudhohi, bukti: "" };
-              const option = {
-                method: "PUT",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify(data),
-              };
-              const result = await fetch(url, option);
-              const statusCode = result.status;
-              const hasil = await result.json();
-              if (statusCode != 200) {
-                console.log(hasil);
-              } else {
-                console.log("berhasil fetch");
+              if(file){
+                console.log("gambar berhasil masuk");
+                // Upload gambar ke Firebase Storage
+                const storageRef = ref(storage, 'images/' + file.name);
+                await uploadBytes(storageRef, file);
 
-                // Temukan elemen modal berdasarkan id mudhohi
-                const modalElement = document.getElementById(
-                  `modalMudhohi${idMudhohi}`
-                );
+                // Mendapatkan URL gambar
+                const downloadURL = await getDownloadURL(storageRef);
+                document.getElementById(`imageFile${idMudhohi}`).value = "";
 
-                // Pastikan modal diakses dengan aman
-                if (modalElement) {
-                  // Jika menggunakan Bootstrap 5 dan modal instance diperlukan
-                  const modalInstance =
-                    bootstrap.Modal.getInstance(modalElement);
-                  if (modalInstance) {
-                    modalInstance.hide(); // Menutup modal dengan Bootstrap
+                const url = "/panitLt3/deliver";
+                const data = { idSapi, idMudhohi, bukti: downloadURL };
+                const option = {
+                  method: "PUT",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify(data),
+                };
+                const result = await fetch(url, option);
+                const statusCode = result.status;
+                const hasil = await result.json();
+                if (statusCode != 200) {
+                  console.log(hasil);
+                } else {
+                  console.log("berhasil fetch");
 
-                    // Berikan waktu agar Bootstrap menyelesaikan proses tutup modal
-                    setTimeout(() => {
-                      // Hapus modal element jika perlu
-                      modalElement.classList.remove("show");
-                      modalElement.removeAttribute("aria-modal");
-                      modalElement.style.display = "none";
+                  // Temukan elemen modal berdasarkan id mudhohi
+                  const modalElement = document.getElementById(
+                    `modalMudhohiUpload${idMudhohi}`
+                  );
 
-                      // Hilangkan backdrop
-                      const modalBackdrop =
-                        document.querySelector(".modal-backdrop");
-                      if (modalBackdrop) {
-                        modalBackdrop.remove();
-                      }
+                  // Pastikan modal diakses dengan aman
+                  if (modalElement) {
+                    // Jika menggunakan Bootstrap 5 dan modal instance diperlukan
+                    const modalInstance =
+                      bootstrap.Modal.getInstance(modalElement);
+                    if (modalInstance) {
+                      modalInstance.hide(); // Menutup modal dengan Bootstrap
 
-                      // Kembalikan scroll pada body
-                      document.body.classList.remove("modal-open");
-                      document.body.style = "";
+                      // Berikan waktu agar Bootstrap menyelesaikan proses tutup modal
+                      setTimeout(() => {
+                        // Hapus modal element jika perlu
+                        modalElement.classList.remove("show");
+                        modalElement.removeAttribute("aria-modal");
+                        modalElement.style.display = "none";
 
-                      modalInstance.dispose(); // Hapus instance modal
-                    }, 300); // Menunda selama 300ms
+                        // Hilangkan backdrop
+                        const modalBackdrop =
+                          document.querySelector(".modal-backdrop");
+                        if (modalBackdrop) {
+                          modalBackdrop.remove();
+                        }
+
+                        // Kembalikan scroll pada body
+                        document.body.classList.remove("modal-open");
+                        document.body.style = "";
+
+                        modalInstance.dispose(); // Hapus instance modal
+                      }, 300); // Menunda selama 300ms
+                    }
                   }
                 }
+              }
+              else{
+                console.log("tidak ada gambar yang masuk");
+                document.getElementById(`imageFile${idMudhohi}`).value = "";
+
               }
             });
           });
