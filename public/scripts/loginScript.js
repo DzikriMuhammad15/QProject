@@ -54,3 +54,74 @@ submitLogin.addEventListener("click", async (e) => {
     console.log(hasil.message);
   }
 })
+
+
+const submitSignUp = document.getElementById("submitSignUp");
+submitSignUp.addEventListener("click", async (e) => {
+  e.preventDefault();
+  var username = document.getElementById("usernameInputSignUp").value;
+  var password = document.getElementById("passwordInputSignUp").value;
+  var name = document.getElementById("nameInputSignUp").value;
+  var role = document.getElementById("role").value;
+  if (role == "mudhohi") {
+    var address = document.getElementById("addressInputSignUp").value;
+    var phoneNumber = document.getElementById("phoneNumberInputSignUp").value;
+    var nomorSapi = document.getElementById("nomorSapiInputSignUp").value;
+    // console.log({ username, password, name, role, address, phoneNumber, nomorSapi });
+    var url = "/postMudhohi"
+    var data = { username, password, name, alamat: address, noHP: phoneNumber, noSapi: nomorSapi };
+    const option = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    }
+    const result = await fetch(url, option);
+    const hasil = await result.json();
+    console.log(hasil);
+  }
+  else if (role == "panitia-lantai-1") {
+    var url = "/postPanitLt1"
+    var data = { username, password, name };
+    const option = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    }
+    const result = await fetch(url, option);
+    const hasil = await result.json();
+    console.log(hasil);
+  }
+  else if (role == "panitia-lantai-2") {
+    var url = "/postPanitLt2"
+    var data = { username, password, name };
+    const option = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    }
+    const result = await fetch(url, option);
+    const hasil = await result.json();
+    console.log(hasil);
+  }
+  else {
+    // panit-lantai-3
+    var url = "/postPanitLt3"
+    var data = { username, password, name };
+    const option = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    }
+    const result = await fetch(url, option);
+    const hasil = await result.json();
+    console.log(hasil);
+  }
+})

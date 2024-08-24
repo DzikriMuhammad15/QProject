@@ -14,7 +14,10 @@
       href="https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/stylesheets/adminStyle.css" />
+    <link
+      rel="stylesheet"
+      href="/stylesheets/verifyPanitLt1DashboardStyle.css"
+    />
     <!-- --------- FAVICON ---------- -->
     <link
       rel="shortcut icon"
@@ -90,11 +93,12 @@
 
       <!-- MAIN -->
       <main>
-        <h1 class="title">Hello, <%= currentUser.name %></h1>
         <ul class="breadcrumbs">
           <li><a href="#">Home</a></li>
           <li class="divider">/</li>
           <li><a href="#" class="active">Dashboard</a></li>
+          <li class="divider">/</li>
+          <li><a href="#" class="active">Verify Panit Lantai 1</a></li>
         </ul>
         <div class="info-data">
           <section class="section" id="explore">
@@ -148,7 +152,7 @@
       integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
       crossorigin="anonymous"
     ></script>
-    <script src="scripts/adminScript.js"></script>
+    <script src="/scripts/verifyPanitLt1DashboardScript.js"></script>
     <script>
       // Konfigurasi Firebase
 
@@ -159,54 +163,56 @@
 
       // Referensi ke path data sapi
       const sapiRef = database.ref("sapi/");
+      const candidateUsersRef = database.ref("userCandidate/");
 
       // Fungsi untuk memperbarui konten halaman
-      function updateDataOnPage(sapi) {
+      function updateDataOnPage(candidateUser) {
         const exploreSection = document.getElementById("explore");
         exploreSection.innerHTML = ""; // Kosongkan kontainer
         const body = document.querySelector("body");
 
-        for (let index = 0; index < Math.floor(sapi.length / 3) + 1; index++) {
+        for (let index = 0; index < Math.floor(candidateUser.length / 3) + 1; index++) {
           const projectContainer = document.createElement("div");
           projectContainer.className = "project-container";
 
           for (let i = index * 3; i < index * 3 + 3; i++) {
-            if (i < sapi.length) {
+            if (i < candidateUser.length) {
               const projectBox = document.createElement("div");
               projectBox.className = "project-box";
               projectBox.setAttribute("data-bs-toggle", "modal");
               projectBox.setAttribute(
                 "data-bs-target",
-                `#modalSapi${sapi[i].idSapi}`
+                `#modalCandidateUser${candidateUser[i].idUserCandidate}`
               );
 
               projectBox.innerHTML = `
                 <i class="fa-solid fa-cow" style="color: #74C0FC;"></i>
-                <h3>Sapi ${sapi[i].idSapi}</h3>
-                <label>${sapi[i].state}</label>
+                <h3>${candidateUser[i].username}</h3>
+                <label>${candidateUser[i].name}</label>
               `;
               projectContainer.appendChild(projectBox);
               // buat modal
               const modal = document.createElement("div");
               modal.className = "modal fade";
-              modal.setAttribute("id", `modalSapi${sapi[i].idSapi}`);
+              modal.setAttribute("id", `modalCandidateUser${candidateUser[i].idUserCandidate}`);
               modal.setAttribute("tabindex", "-1");
               modal.setAttribute("aria-labelledby", "exampleModalLabel");
               modal.setAttribute("aria-hidden", "true");
               var temp = `<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
           <div class="modal-header">
-            <h1 class="modal-title fs-5" id="exampleModalLabel">Sapi ${sapi[i].idSapi}</h1>
+            <h1 class="modal-title fs-5" id="exampleModalLabel">${candidateUser[i].username}</h1>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
             <div class="modal-body">
+              <p>name : ${candidateUser[i].name}</p>
+              <p>role : ${candidateUser[i].role}</p>
+              <p><b>Are you sure want to verify this user?</b></p>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary verifyButton" data-id="${candidateUser[i].idUserCandidate}" >Yes</button>
+            </div>
             `;
-              var mudhohis = sapi[i].mudhohi;
-              mudhohis.forEach((mudhohi) => {
-                temp += `<hr>
-              <h2 class="fs-5">${mudhohi.name}</h2>
-              <p>${mudhohi.alamat}</p>`;
-              });
               temp += `</div>
         </div>
       </div>`;
@@ -223,67 +229,112 @@
         const result = [];
 
         // Loop melalui setiap key di object data
-        for (const idSapi in data) {
-          const sapi = data[idSapi];
-          const sapiObj = {
-            idSapi: idSapi,
-            foto: sapi.foto,
-            state: sapi.state,
-            mudhohi: [],
-          };
-
-          // Loop melalui setiap key di dalam object sapi
-          for (const key in sapi) {
-            if (
-              key !== "foto" &&
-              key !== "state" &&
-              typeof sapi[key] === "object"
-            ) {
-              // Fetch mudhohi data from "mudhohis/"
-              const mudhohiObj = await database
-                .ref("mudhohis/" + key)
-                .once("value")
-                .then((snapshot) => snapshot.val());
-
-              // Fetch name from "users/" based on mudhohiId
-              const userObj = await database
-                .ref("users/")
-                .orderByChild("mudhohiId")
-                .equalTo(key)
-                .once("value")
-                .then((snapshot) => {
-                  const userData = snapshot.val();
-                  if (userData) {
-                    // Since the result is an object, retrieve the first user's name
-                    const firstUserKey = Object.keys(userData)[0];
-                    return userData[firstUserKey].name;
-                  }
-                  return null;
-                });
-
-              // Add mudhohi object with the name to sapiObj
-              sapiObj.mudhohi.push({
-                idMudhohi: key,
-                ...mudhohiObj,
-                name: userObj,
-              });
-            }
+        for (const idUserCandidate in data) {
+          const userCandidate = data[idUserCandidate];
+          const candidateObj = {
+            idUserCandidate: idUserCandidate,
+            name: userCandidate.name,
+            username: userCandidate.username,
+            role: userCandidate.role
           }
-
-          result.push(sapiObj);
+          result.push(candidateObj);
         }
 
         return result;
       }
 
       // Listen untuk perubahan data
-      sapiRef.on("value", async (snapshot) => {
+      candidateUsersRef.on("value", async (snapshot) => {
         const data = snapshot.val();
-        // console.log(data);
         if (data) {
-          const sapiArray = await transformData(data);
-          console.log(sapiArray);
-          updateDataOnPage(sapiArray);
+          const userCandidates = await transformData(data);
+          console.log(userCandidates);
+          const filteredData = userCandidates.filter((el) => {
+            return el.role == "panitLt1"
+          })
+          console.log(filteredData);
+          updateDataOnPage(filteredData);
+
+
+
+          // verifyButton handler
+          const projectBoxes = document.querySelectorAll(".project-box");
+          console.log(projectBoxes);
+          projectBoxes.forEach((projectBox) => {
+            projectBox.addEventListener("click", async (e) => {
+              e.preventDefault();
+              const verifyButton = document.querySelectorAll(
+                ".verifyButton"
+              );
+              verifyButton.forEach((verifyButton) => {
+                verifyButton.addEventListener("click", async (e) => {
+                  e.preventDefault();
+                  const idUserCandidate = verifyButton.dataset.id;
+                  console.log(idUserCandidate);
+                  // panggil endpoint untuk membuat panitLt1
+                  const url = "/admin/postPanitLt1";
+                  const data = { idUserCandidate };
+                  const option = {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(data),
+                  };
+                  const result = await fetch(url, option);
+                  const statusCode = result.status;
+                  const hasil = await result.json();
+                  if (statusCode != 200) {
+                    console.log(hasil);
+                  } else {
+                    console.log("berhasil fetch");
+                    // Temukan elemen modal berdasarkan id sapi
+                    const modalElement = document.getElementById(
+                      `modalCandidateUser${idUserCandidate}`
+                    );
+
+                    // Pastikan modal diakses dengan aman
+                    if (modalElement) {
+                      // Jika menggunakan Bootstrap 5 dan modal instance diperlukan
+                      const modalInstance =
+                        bootstrap.Modal.getInstance(modalElement);
+                      if (modalInstance) {
+                        modalInstance.hide(); // Menutup modal dengan Bootstrap
+
+                        // Berikan waktu agar Bootstrap menyelesaikan proses tutup modal
+                        setTimeout(() => {
+                          // Hapus modal element jika perlu
+                          modalElement.classList.remove("show");
+                          modalElement.removeAttribute("aria-modal");
+                          modalElement.style.display = "none";
+
+                          // Hilangkan backdrop
+                          const modalBackdrop =
+                            document.querySelector(".modal-backdrop");
+                          if (modalBackdrop) {
+                            modalBackdrop.remove();
+                          }
+
+                          // Kembalikan scroll pada body
+                          document.body.classList.remove("modal-open");
+                          document.body.style = "";
+
+                          modalInstance.dispose(); // Hapus instance modal
+                        }, 300); // Menunda selama 300ms
+                      }
+                    }
+                  }
+                });
+              });
+            });
+          });
+
+
+
+
+
+
+
         }
       });
     </script>

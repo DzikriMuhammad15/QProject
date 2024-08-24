@@ -57,10 +57,130 @@ app.use("/mudhohi", authMiddlewares.protectRoute, authMiddlewares.mudhohiAuthori
 app.post("/createAdmin", adminController.postAdmin);
 
 // pengguna yang belum login
+
+const bcrypt = require('bcrypt');
+const MudhohiModel = require("./models/mudhohiModel");
+const UserModel = require("./models/userModel");
+const SapiModel = require("./models/sapiModel");
+const database = require("./firebaseConfig");
+const UserCandidateModel = require("./models/userCandidateModel");
+const MudhohiCandidateModel = require("./models/mudhohiCandidateModel");
+
+async function isUsernameAvailable(username) {
+    const snapshot1 = await database.ref('users').orderByChild('username').equalTo(username).once('value');
+    const snapshot2 = await database.ref('userCandidate').orderByChild('username').equalTo(username).once('value');
+    return !(snapshot1.exists() || snapshot2.exists());
+}
+
+async function isSapiAvailableById(sapiId) {
+    const snapshot = await database.ref('sapi').child(sapiId).once('value');
+    return !snapshot.exists();
+}
+
+
 app.get("/", async (req, res) => {
     const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
     console.log(firebaseConfig);
     res.render("mainView", { firebaseConfig });
+})
+app.post("/postPanitLt1", async (req, res) => {
+    try {
+        const { name, username, password } = req.body;
+        var usernameAvailable = await isUsernameAvailable(username);
+        if (!usernameAvailable) {
+            return res.status(400).json({ message: "username not available" });
+        }
+        if (password.length < 6) {
+            return res.status(400).json({ message: "password length cannot less than 6 charachters" });
+        }
+
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const user = { name, username, password: hashedPassword, role: "panitLt1" };
+        await UserCandidateModel.createUser(user);
+        res.status(200).json({ message: "panitLt1 added successfully" });
+    }
+    catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+})
+
+app.post("/postPanitLt2", async (req, res) => {
+    try {
+        const { name, username, password } = req.body;
+        var usernameAvailable = await isUsernameAvailable(username);
+        if (!usernameAvailable) {
+            return res.status(400).json({ message: "username not available" });
+        }
+        if (password.length < 6) {
+            return res.status(400).json({ message: "password length cannot less than 6 charachters" });
+        }
+
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const user = { name, username, password: hashedPassword, role: "panitLt2" };
+        await UserCandidateModel.createUser(user);
+        res.status(200).json({ message: "panitLt2 added successfully" });
+    }
+    catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+})
+
+app.post("/postPanitLt3", async (req, res) => {
+    try {
+        const { name, username, password } = req.body;
+        var usernameAvailable = await isUsernameAvailable(username);
+        if (!usernameAvailable) {
+            return res.status(400).json({ message: "username not available" });
+        }
+        if (password.length < 6) {
+            return res.status(400).json({ message: "password length cannot less than 6 charachters" });
+        }
+
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const user = { name, username, password: hashedPassword, role: "panitLt3" };
+        await UserCandidateModel.createUser(user);
+        res.status(200).json({ message: "panitLt3 added successfully" });
+    }
+    catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+})
+
+app.post("/postMudhohi", async (req, res) => {
+    try {
+        const { name, alamat, noHP, username, password, noSapi } = req.body;
+        var tidakAdaSapi = await isSapiAvailableById(noSapi);
+        if (tidakAdaSapi) {
+            return res.status(400).json({ message: "there's no sapi with that id" })
+        }
+        var usernameAvailable = await isUsernameAvailable(username);
+        if (!usernameAvailable) {
+            return res.status(400).json({ message: "username not available" });
+        }
+        if (password.length < 6) {
+            return res.status(400).json({ message: "password length cannot less than 6 charachters" });
+        }
+
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const mudhohi = { noHP, alamat, noSapi };
+        const mudhohiId = await MudhohiCandidateModel.createMudhohi(mudhohi);
+
+        const user = { name, username, password: hashedPassword, role: "mudhohi", mudhohiId };
+        await UserCandidateModel.createUser(user);
+
+        res.status(200).json({ message: "mudhohi added successfully" });
+    }
+    catch (err) {
+        res.status(400).json({ message: err.message });
+    }
 })
 
 // // path lain (else)
