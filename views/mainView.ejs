@@ -14,7 +14,7 @@
       href="https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/stylesheets/adminStyle.css" />
+    <link rel="stylesheet" href="/stylesheets/mainStyle.css" />
     <style>
       button {
         white-space: nowrap;
@@ -26,6 +26,8 @@
       href="assets/img/logiPsikologi.png"
       type="image/x-icon"
     />
+    <!-- ANIME JS -->
+    <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
     <title>Qurban</title>
     <!-- font awesome icon -->
     <link
@@ -54,6 +56,52 @@
 
     <!-- MAIN -->
     <main>
+      <ul class="box-info">
+        <li>
+          <i class="bx bxs-calendar-check"></i>
+          <span class="text">
+            <h3 id="belumDiselbelihLive">0</h3>
+            <p>Belum Disembelih</p>
+          </span>
+        </li>
+        <li>
+          <i class="bx bxs-group"></i>
+          <span class="text">
+            <h3 id="prosesPenyembelihanLive">0</h3>
+            <p>Proses Penyembelihan</p>
+          </span>
+        </li>
+        <li>
+          <i class="bx bxs-dollar-circle"></i>
+          <span class="text">
+            <h3 id="pemrosesanDagingLive">0</h3>
+            <p>Pemrosesan Daging</p>
+          </span>
+        </li>
+      </ul>
+      <ul class="box-info">
+        <li>
+          <i class="bx bxs-group"></i>
+          <span class="text">
+            <h3 id="siapDibagikanLive">0</h3>
+            <p>Siap Dibagikan</p>
+          </span>
+        </li>
+        <li>
+          <i class="bx bxs-calendar-check"></i>
+          <span class="text">
+            <h3 id="sedangDibagikanKeMudhohiLive">0</h3>
+            <p>Sedang Dibagikan ke Mudhohi</p>
+          </span>
+        </li>
+        <li>
+          <i class="bx bxs-group"></i>
+          <span class="text">
+            <h3 id="selesaiDibagikanLive">0</h3>
+            <p>Selesai Dibagikan</p>
+          </span>
+        </li>
+      </ul>
       <div class="info-data">
         <section class="section" id="explore">
           <!-- Project boxes will be dynamically inserted here -->
@@ -106,150 +154,380 @@
       crossorigin="anonymous"
     ></script>
     <script src="scripts/adminScript.js"></script>
-    <script>
-      var firebaseConfig = <%- JSON.stringify(firebaseConfig) %>;
-      console.log(firebaseConfig);
-      // Inisialisasi Firebase
-      firebase.initializeApp(firebaseConfig);
-      const database = firebase.database();
+    <script type="module">
+            import anime from "https://cdn.jsdelivr.net/npm/animejs@3.2.1/+esm";
+            var firebaseConfig = <%- JSON.stringify(firebaseConfig) %>;
+            console.log(firebaseConfig);
+            // Inisialisasi Firebase
+            firebase.initializeApp(firebaseConfig);
+            const database = firebase.database();
 
-      // Referensi ke path data sapi
-      const sapiRef = database.ref("sapi/");
+            // Referensi ke path data sapi
+            const sapiRef = database.ref("sapi/");
 
-      // Fungsi untuk memperbarui konten halaman
-      function updateDataOnPage(sapi) {
-        const exploreSection = document.getElementById("explore");
-        exploreSection.innerHTML = ""; // Kosongkan kontainer
-        const body = document.querySelector("body");
+            function animateCountUpdate(element, newValue) {
+        const currentValue = element.innerText;
 
-        for (let index = 0; index < Math.floor(sapi.length / 3) + 1; index++) {
-          const projectContainer = document.createElement("div");
-          projectContainer.className = "project-container";
+        // Buat container untuk animasi
+        const container = document.createElement("div");
+        container.style.position = "relative";
+        container.style.display = "inline-block";
+        container.style.height = element.offsetHeight + "px"; // Tetapkan tinggi container agar tetap konsisten
+        container.style.width = element.offsetWidth + "px";  // Tetapkan lebar container agar tetap konsisten
 
-          for (let i = index * 3; i < index * 3 + 3; i++) {
-            if (i < sapi.length) {
-              const projectBox = document.createElement("div");
-              projectBox.className = "project-box";
-              projectBox.setAttribute("data-bs-toggle", "modal");
-              projectBox.setAttribute(
-                "data-bs-target",
-                `#modalSapi${sapi[i].idSapi}`
-              );
+        // Elemen nilai lama
+        const oldValueElement = document.createElement("div");
+        oldValueElement.innerText = currentValue;
+        oldValueElement.style.position = "absolute";
+        oldValueElement.style.top = "0";
+        oldValueElement.style.left = "0";
+        oldValueElement.style.width = "100%";
+        oldValueElement.style.height = "100%";
+        oldValueElement.style.fontSize = window.getComputedStyle(element).fontSize;
+        oldValueElement.style.fontWeight = window.getComputedStyle(element).fontWeight;
+        oldValueElement.style.lineHeight = window.getComputedStyle(element).lineHeight;
+        oldValueElement.style.textAlign = window.getComputedStyle(element).textAlign;
+        container.appendChild(oldValueElement);
 
-              projectBox.innerHTML = `
-                <i class="fa-solid fa-cow" style="color: #74C0FC;"></i>
-                <h3>Sapi ${sapi[i].idSapi}</h3>
-                <label>${sapi[i].state}</label>
-              `;
-              projectContainer.appendChild(projectBox);
-              // buat modal
-              const modal = document.createElement("div");
-              modal.className = "modal fade";
-              modal.setAttribute("id", `modalSapi${sapi[i].idSapi}`);
-              modal.setAttribute("tabindex", "-1");
-              modal.setAttribute("aria-labelledby", "exampleModalLabel");
-              modal.setAttribute("aria-hidden", "true");
-              var temp = `<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h1 class="modal-title fs-5" id="exampleModalLabel">Sapi ${sapi[i].idSapi}</h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-            <div class="modal-body">
-            `;
-              var mudhohis = sapi[i].mudhohi;
-              mudhohis.forEach((mudhohi) => {
-                temp += `<hr>
-              <h2 class="fs-5">${mudhohi.name}</h2>
-              <p>${mudhohi.alamat}</p>`;
-              });
-              temp += `</div>
-        </div>
-      </div>`;
+        // Elemen nilai baru
+        const newValueElement = document.createElement("div");
+        newValueElement.innerText = newValue;
+        newValueElement.style.position = "absolute";
+        newValueElement.style.top = "0";
+        newValueElement.style.left = "0";
+        newValueElement.style.width = "100%";
+        newValueElement.style.height = "100%";
+        newValueElement.style.fontSize = window.getComputedStyle(element).fontSize;
+        newValueElement.style.fontWeight = window.getComputedStyle(element).fontWeight;
+        newValueElement.style.lineHeight = window.getComputedStyle(element).lineHeight;
+        newValueElement.style.textAlign = window.getComputedStyle(element).textAlign;
+        newValueElement.style.opacity = "0";
+        container.appendChild(newValueElement);
 
-              modal.innerHTML = temp;
-              body.appendChild(modal);
-            }
-          }
-          exploreSection.appendChild(projectContainer);
-        }
+        // Ganti elemen asli dengan container yang di-animasi
+        element.innerHTML = "";
+        element.appendChild(container);
+
+        anime({
+          targets: oldValueElement,
+          translateY: -50,
+          duration: 500,
+          easing: "easeInOutQuad",
+          complete: () => {
+            oldValueElement.remove();
+          },
+        });
+
+        anime({
+          targets: newValueElement,
+          opacity: [0, 1],
+          translateY: [50, 0],
+          duration: 500,
+          easing: "easeInOutQuad",
+          complete: () => {
+            // Setelah animasi selesai, reset posisi elemen agar sesuai
+            newValueElement.style.position = "static";
+            container.style.height = "auto"; // Hapus tinggi tetap dari container setelah animasi
+            container.style.width = "auto"; // Hapus lebar tetap dari container setelah animasi
+          },
+        });
       }
 
-      async function transformData(data) {
-        const result = [];
+            // Fungsi untuk memperbarui konten halaman
+            function updateDataOnPage(sapi) {
+              const exploreSection = document.getElementById("explore");
+              exploreSection.innerHTML = ""; // Kosongkan kontainer
+              const body = document.querySelector("body");
 
-        // Loop melalui setiap key di object data
-        for (const idSapi in data) {
-          const sapi = data[idSapi];
-          const sapiObj = {
-            idSapi: idSapi,
-            foto: sapi.foto,
-            state: sapi.state,
-            mudhohi: [],
-          };
+              for (let index = 0; index < Math.floor(sapi.length / 3) + 1; index++) {
+                const projectContainer = document.createElement("div");
+                projectContainer.className = "project-container";
 
-          // Loop melalui setiap key di dalam object sapi
-          for (const key in sapi) {
-            if (
-              key !== "foto" &&
-              key !== "state" &&
-              typeof sapi[key] === "object"
-            ) {
-              // Fetch mudhohi data from "mudhohis/"
-              const mudhohiObj = await database
-                .ref("mudhohis/" + key)
-                .once("value")
-                .then((snapshot) => snapshot.val());
+                for (let i = index * 3; i < index * 3 + 3; i++) {
+                  if (i < sapi.length) {
+                    const projectBox = document.createElement("div");
+                    projectBox.className = "project-box";
+                    projectBox.setAttribute("data-bs-toggle", "modal");
+                    projectBox.setAttribute(
+                      "data-bs-target",
+                      `#modalSapi${sapi[i].idSapi}`
+                    );
 
-              // Fetch name from "users/" based on mudhohiId
-              const userObj = await database
-                .ref("users/")
-                .orderByChild("mudhohiId")
-                .equalTo(key)
-                .once("value")
-                .then((snapshot) => {
-                  const userData = snapshot.val();
-                  if (userData) {
-                    // Since the result is an object, retrieve the first user's name
-                    const firstUserKey = Object.keys(userData)[0];
-                    return userData[firstUserKey].name;
+                    projectBox.innerHTML = `
+                      <i class="fa-solid fa-cow" style="color: #74C0FC;"></i>
+                      <h3>Sapi ${sapi[i].idSapi}</h3>
+                      <label>${sapi[i].state}</label>
+                    `;
+                    projectContainer.appendChild(projectBox);
+                    // buat modal
+                    const modal = document.createElement("div");
+                    modal.className = "modal fade";
+                    modal.setAttribute("id", `modalSapi${sapi[i].idSapi}`);
+                    modal.setAttribute("tabindex", "-1");
+                    modal.setAttribute("aria-labelledby", "exampleModalLabel");
+                    modal.setAttribute("aria-hidden", "true");
+                    var temp = `<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h1 class="modal-title fs-5" id="exampleModalLabel">Sapi ${sapi[i].idSapi}</h1>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                  <div class="modal-body">
+                  `;
+                    var mudhohis = sapi[i].mudhohi;
+                    mudhohis.forEach((mudhohi) => {
+                      temp += `<hr>
+                    <h2 class="fs-5">${mudhohi.name}</h2>
+                    <p>${mudhohi.alamat}</p>`;
+                    });
+                    temp += `</div>
+              </div>
+            </div>`;
+
+                    modal.innerHTML = temp;
+                    body.appendChild(modal);
                   }
-                  return null;
-                });
-
-              // Add mudhohi object with the name to sapiObj
-              sapiObj.mudhohi.push({
-                idMudhohi: key,
-                ...mudhohiObj,
-                name: userObj,
-              });
+                }
+                exploreSection.appendChild(projectContainer);
+              }
             }
-          }
 
-          result.push(sapiObj);
-        }
+            async function transformData(data) {
+              const result = [];
 
-        return result;
-      }
+              // Loop melalui setiap key di object data
+              for (const idSapi in data) {
+                const sapi = data[idSapi];
+                const sapiObj = {
+                  idSapi: idSapi,
+                  foto: sapi.foto,
+                  state: sapi.state,
+                  mudhohi: [],
+                };
 
-      // Listen untuk perubahan data
-      sapiRef.on("value", async (snapshot) => {
-        const data = snapshot.val();
-        // console.log(data);
-        if (data) {
-          const sapiArray = await transformData(data);
-          console.log(sapiArray);
-          updateDataOnPage(sapiArray);
-        }
-      });
+                // Loop melalui setiap key di dalam object sapi
+                for (const key in sapi) {
+                  if (
+                    key !== "foto" &&
+                    key !== "state" &&
+                    typeof sapi[key] === "object"
+                  ) {
+                    // Fetch mudhohi data from "mudhohis/"
+                    const mudhohiObj = await database
+                      .ref("mudhohis/" + key)
+                      .once("value")
+                      .then((snapshot) => snapshot.val());
 
-      //   loginPageButton handle
-      const loginPageButton = document.getElementById("loginPageButton");
-      loginPageButton.addEventListener("click", async (e) => {
-        e.preventDefault();
-        location.assign("/auth");
-      });
-      console.log(loginPageButton);
+                    // Fetch name from "users/" based on mudhohiId
+                    const userObj = await database
+                      .ref("users/")
+                      .orderByChild("mudhohiId")
+                      .equalTo(key)
+                      .once("value")
+                      .then((snapshot) => {
+                        const userData = snapshot.val();
+                        if (userData) {
+                          // Since the result is an object, retrieve the first user's name
+                          const firstUserKey = Object.keys(userData)[0];
+                          return userData[firstUserKey].name;
+                        }
+                        return null;
+                      });
+
+                    // Add mudhohi object with the name to sapiObj
+                    sapiObj.mudhohi.push({
+                      idMudhohi: key,
+                      ...mudhohiObj,
+                      name: userObj,
+                    });
+                  }
+                }
+
+                result.push(sapiObj);
+              }
+
+              return result;
+            }
+
+            function areArraysEqual(arrayA, arrayB) {
+              // Jika panjang array tidak sama, array pasti tidak sama
+              if (arrayA.length !== arrayB.length) {
+                  return false;
+              }
+
+              // Sortir kedua array
+              const sortedA = arrayA.slice().sort();
+              const sortedB = arrayB.slice().sort();
+
+              // Bandingkan elemen per elemen
+              for (let i = 0; i < sortedA.length; i++) {
+                  if (sortedA[i] !== sortedB[i]) {
+                      return false;
+                  }
+              }
+
+              return true;
+            }
+
+            let idBelumDisembelihGlobal = [];
+            let idProsesPenyembelihanGlobal = [];
+            let idPemrosesanDagingGlobal = [];
+            let idSiapDibagikanGlobal = [];
+            let idSedangDibagikanKeMudhohiGlobal = [];
+            let idSelesaiDibagikanGlobal = [];
+
+            // Listen untuk perubahan data
+            sapiRef.on("value", async (snapshot) => {
+              const data = snapshot.val();
+              // console.log(data);
+              if (data) {
+                const sapiArray = await transformData(data);
+                console.log(sapiArray);
+                let idBelumDisembelih = [];
+                let idProsesPenyembelihan = [];
+                let idPemrosesanDaging = [];
+                let idSiapDibagikan = [];
+                let idSedangDibagikanKeMudhohi = [];
+                let idSelesaiDibagikan = [];
+                sapiArray.forEach((el) => {
+                  if(el.state === "Belum Disembelih"){
+                    idBelumDisembelih.push(el.idSapi);
+                  }
+                  else if(el.state === "Proses Penyembelihan"){
+                    idProsesPenyembelihan.push(el.idSapi);
+                  }
+                  else if(el.state === "Pemrosesan Daging"){
+                    idPemrosesanDaging.push(el.idSapi);
+                  }
+                  else if(el.state === "Siap Dibagikan"){
+                    idSiapDibagikan.push(el.idSapi);
+                  }
+                  else{
+                    // selesai dibagikan
+                    idSelesaiDibagikan.push(el.idSapi);
+                  }
+                })
+                let idBelumDisembelihString = idBelumDisembelih.join(", ");
+                let idProsesPenyembelihanString = idProsesPenyembelihan.join(", ");
+                let idPemrosesanDagingString = idPemrosesanDaging.join(", ");
+                let idSiapDibagikanString = idSiapDibagikan.join(", ");
+                let idSedangDibagikanKeMudhohiString = idSedangDibagikanKeMudhohi.join(", ");
+                let idSelesaiDibagikanString = idSelesaiDibagikan.join(", ");
+
+                if(!areArraysEqual(idBelumDisembelih, idBelumDisembelihGlobal)){
+                  if(idBelumDisembelih.length != 0){
+                    animateCountUpdate(
+                      document.getElementById("belumDiselbelihLive"),
+                      idBelumDisembelihString
+                    );
+                  }
+                else{
+
+                animateCountUpdate(
+                      document.getElementById("belumDiselbelihLive"),
+                      "-"
+                    );
+                  }
+                idBelumDisembelihGlobal.splice(0, idBelumDisembelihGlobal.length, ...idBelumDisembelih);
+                }
+
+                if(!areArraysEqual(idProsesPenyembelihan, idProsesPenyembelihanGlobal)){
+                  if(idProsesPenyembelihan.length != 0){
+                    animateCountUpdate(
+                      document.getElementById("prosesPenyembelihanLive"),
+                      idProsesPenyembelihanString
+                    );
+                  }
+                  else{
+                    animateCountUpdate(
+                      document.getElementById("prosesPenyembelihanLive"),
+                      "-"
+                    );
+                  }
+                  idProsesPenyembelihanGlobal.splice(0, idProsesPenyembelihanGlobal.length, ...idProsesPenyembelihan);
+                }
+
+                if(!areArraysEqual(idPemrosesanDaging, idPemrosesanDagingGlobal)){
+                  if(idPemrosesanDaging.length != 0){
+                    animateCountUpdate(
+                      document.getElementById("pemrosesanDagingLive"),
+                      idPemrosesanDagingString
+                    );
+                  }else{
+                    animateCountUpdate(
+                      document.getElementById("pemrosesanDagingLive"),
+                      "-"
+                    );
+                  }
+                  idPemrosesanDagingGlobal.splice(0, idPemrosesanDagingGlobal.length, ...idPemrosesanDaging);
+                }
+
+                if(!areArraysEqual(idSiapDibagikan, idSiapDibagikanGlobal)){
+                  if(idSiapDibagikan.length != 0){
+                    animateCountUpdate(
+                      document.getElementById("siapDibagikanLive"),
+                      idSiapDibagikanString
+                    );
+                  }
+                  else{
+
+                    animateCountUpdate(
+                      document.getElementById("siapDibagikanLive"),
+                      "-"
+                    );
+                  }
+                  idSiapDibagikanGlobal.splice(0, idSiapDibagikanGlobal.length, ...idSiapDibagikan);
+                }
+
+
+                if(!areArraysEqual(idSedangDibagikanKeMudhohi, idSedangDibagikanKeMudhohiGlobal)){
+                  if(idSedangDibagikanKeMudhohi.length != 0){
+                    animateCountUpdate(
+                      document.getElementById("sedangDibagikanKeMudhohiLive"),
+                      idSedangDibagikanKeMudhohiString
+                    );
+                  }
+                  else{
+                    animateCountUpdate(
+                      document.getElementById("sedangDibagikanKeMudhohiLive"),
+                      "-"
+                    );
+                  }
+                  idSedangDibagikanKeMudhohiGlobal.splice(0, idSedangDibagikanKeMudhohiGlobal.length, ...idSedangDibagikanKeMudhohi);
+                }
+
+
+                if(!areArraysEqual(idSelesaiDibagikan, idSelesaiDibagikanGlobal)){
+                  if(idSelesaiDibagikan.length != 0){
+                    animateCountUpdate(
+                      document.getElementById("selesaiDibagikanLive"),
+                      idSelesaiDibagikanString
+                    );
+                }
+                else{
+                  animateCountUpdate(
+                      document.getElementById("selesaiDibagikanLive"),
+                      "-"
+                    );
+                  }
+                  idSelesaiDibagikanGlobal.splice(0, idSelesaiDibagikanGlobal.length, ...idSelesaiDibagikan);
+                }
+
+
+
+
+
+                updateDataOnPage(sapiArray);
+              }
+            });
+
+            //   loginPageButton handle
+            const loginPageButton = document.getElementById("loginPageButton");
+            loginPageButton.addEventListener("click", async (e) => {
+              e.preventDefault();
+              location.assign("/auth");
+            });
+            console.log(loginPageButton);
     </script>
   </body>
 </html>
