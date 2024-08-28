@@ -51,7 +51,11 @@ submitLogin.addEventListener("click", async (e) => {
   }
   else {
     // gagal login
-    console.log(hasil.message);
+    const loginError = document.getElementById("loginError");
+    loginError.textContent = hasil.message;
+    setTimeout(() => {
+      loginError.textContent = "";
+    }, 4000)
   }
 })
 
@@ -79,7 +83,18 @@ submitSignUp.addEventListener("click", async (e) => {
     }
     const result = await fetch(url, option);
     const hasil = await result.json();
-    console.log(hasil);
+    if (result.status != 200) {
+      // gagal
+      const signUpError = document.getElementById("signUpError");
+      signUpError.textContent = hasil.message;
+      setTimeout(() => {
+        signUpError.textContent = ""
+      }, 4000);
+    }
+    else {
+      // berhasil
+      console.log(hasil);
+    }
   }
   else if (role == "panitia-lantai-1") {
     var url = "/postPanitLt1"
@@ -93,7 +108,18 @@ submitSignUp.addEventListener("click", async (e) => {
     }
     const result = await fetch(url, option);
     const hasil = await result.json();
-    console.log(hasil);
+    if (result.status != 200) {
+      // gagal
+      const signUpError = document.getElementById("signUpError");
+      signUpError.textContent = hasil.message;
+      setTimeout(() => {
+        signUpError.textContent = ""
+      }, 4000);
+    }
+    else {
+      // berhasil
+      console.log(hasil);
+    }
   }
   else if (role == "panitia-lantai-2") {
     var url = "/postPanitLt2"
@@ -107,7 +133,18 @@ submitSignUp.addEventListener("click", async (e) => {
     }
     const result = await fetch(url, option);
     const hasil = await result.json();
-    console.log(hasil);
+    if (result.status != 200) {
+      // gagal
+      const signUpError = document.getElementById("signUpError");
+      signUpError.textContent = hasil.message;
+      setTimeout(() => {
+        signUpError.textContent = ""
+      }, 4000);
+    }
+    else {
+      // berhasil
+      console.log(hasil);
+    }
   }
   else {
     // panit-lantai-3
@@ -122,6 +159,17 @@ submitSignUp.addEventListener("click", async (e) => {
     }
     const result = await fetch(url, option);
     const hasil = await result.json();
-    console.log(hasil);
+    if (result.status != 200) {
+      // gagal
+      const signUpError = document.getElementById("signUpError");
+      signUpError.textContent = hasil.message;
+      setTimeout(() => {
+        signUpError.textContent = ""
+      }, 4000);
+    }
+    else {
+      // berhasil
+      console.log(hasil);
+    }
   }
 })

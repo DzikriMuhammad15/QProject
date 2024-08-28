@@ -632,6 +632,11 @@ main .btn-send:hover {
   z-index: 2;
 }
 
+#buttonAddSapi {
+  margin-left: 3vw;
+  margin-top: 2vh;
+}
+
 @media screen and (max-width: 768px) {
   #content {
     position: relative;
@@ -723,6 +728,13 @@ h3 {
 .project-box:hover.project-box > label {
   color: var(--color-white);
   z-index: 2;
+}
+
+.error {
+  color: #ff0099;
+  margin: 10px 2px;
+  font-size: 0.8em;
+  font-weight: bold;
 }
 
 /* ----- MEDIA QUERY == 1024px / RESPONSIVE ----- */

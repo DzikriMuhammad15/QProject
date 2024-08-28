@@ -64,9 +64,6 @@
             <li><a href="/admin/verifyMudhohiDashboard">Mudhohi</a></li>
           </ul>
         </li>
-        <li>
-          <a href="#"><i class="bx bxs-chart icon"></i> Add Sapi</a>
-        </li>
       </ul>
     </section>
 
@@ -96,6 +93,15 @@
           <li class="divider">/</li>
           <li><a href="#" class="active">Dashboard</a></li>
         </ul>
+        <button
+          type="button"
+          class="btn btn-primary"
+          id="buttonAddSapi"
+          data-bs-toggle="modal"
+          data-bs-target="#addSapiModal"
+        >
+          Add Sapi
+        </button>
         <div class="info-data">
           <section class="section" id="explore">
             <!-- Project boxes will be dynamically inserted here -->
@@ -130,6 +136,64 @@
         </div>
       </div>
     </div>
+
+    <!-- ADD SAPI MODAL -->
+
+    <div
+      class="modal fade"
+      id="addSapiModal"
+      tabindex="-1"
+      aria-labelledby="exampleModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="exampleModalLabel">Add Sapi</h1>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="formAddSapi">
+              <div class="mb-3">
+                <label for="exampleInputEmail1" class="form-label"
+                  >No Sapi</label
+                >
+                <input
+                  type="number"
+                  class="form-control"
+                  id="noSapiInput"
+                  aria-describedby="emailHelp"
+                />
+                <div class="error" id="addSapiError"></div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Close
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              id="submitAddSapiForm"
+            >
+              Add Sapi
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADD SAPI MODAL END -->
 
     <!-- JavaScript SDK -->
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
@@ -286,6 +350,77 @@
           updateDataOnPage(sapiArray);
         }
       });
+
+      const buttonAddSapi = document.getElementById("buttonAddSapi");
+      buttonAddSapi.addEventListener("click", (e) => {
+        e.preventDefault();
+
+        document.getElementById("submitAddSapiForm").addEventListener("click", async (e) => {
+          e.preventDefault();
+          const noSapi = parseInt(document.getElementById("noSapiInput").value);
+          const url = "/admin/postSapi";
+                  const data = { foto: "", noSapi, state: "Belum Disembelih" };
+                  const option = {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(data),
+                  };
+                  const result = await fetch(url, option);
+                  const statusCode = result.status;
+                  const hasil = await result.json();
+                  const addSapiError = document.getElementById("addSapiError");
+                  if (statusCode != 200) {
+                    addSapiError.textContent = hasil.message;
+                  } else {
+                    console.log("berhasil fetch");
+
+                    // Temukan elemen modal berdasarkan id sapi
+                    const modalElement = document.getElementById(
+                      `addSapiModal`
+                    );
+
+                    // Pastikan modal diakses dengan aman
+                    if (modalElement) {
+                      // Jika menggunakan Bootstrap 5 dan modal instance diperlukan
+                      const modalInstance =
+                        bootstrap.Modal.getInstance(modalElement);
+                      if (modalInstance) {
+                        modalInstance.hide(); // Menutup modal dengan Bootstrap
+
+                        // Berikan waktu agar Bootstrap menyelesaikan proses tutup modal
+                        setTimeout(() => {
+                          // Hapus modal element jika perlu
+                          modalElement.classList.remove("show");
+                          modalElement.removeAttribute("aria-modal");
+                          modalElement.style.display = "none";
+
+                          // Hilangkan backdrop
+                          const modalBackdrop =
+                            document.querySelector(".modal-backdrop");
+                          if (modalBackdrop) {
+                            modalBackdrop.remove();
+                          }
+
+                          // Kembalikan scroll pada body
+                          document.body.classList.remove("modal-open");
+                          document.body.style = "";
+
+                          modalInstance.dispose(); // Hapus instance modal
+                        }, 300); // Menunda selama 300ms
+                      }
+                    }
+                    addSapiError.innerHTML = "";
+                    document.getElementById("noSapiInput").value = "";
+                  }
+
+        })
+      })
+
+      document.getElementById("formAddSapi").addEventListener("submit", (e) => {
+        e.preventDefault();
+      })
     </script>
   </body>
 </html>
