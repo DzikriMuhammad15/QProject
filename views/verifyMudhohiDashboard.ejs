@@ -16,7 +16,7 @@
     />
     <link
       rel="stylesheet"
-      href="/stylesheets/verifyPanitLt1DashboardStyle.css"
+      href="/stylesheets/verifyMudhohiDashboardStyle.css"
     />
     <!-- --------- FAVICON ---------- -->
     <link
@@ -59,10 +59,14 @@
             <i class="bx bx-chevron-right icon-right"></i
           ></a>
           <ul class="side-dropdown show">
-            <li><a href="#" class="active">Panit Lantai 1</a></li>
+            <li>
+              <a href="/admin/verifyPanitLt1Dashboard" class="active"
+                >Panit Lantai 1</a
+              >
+            </li>
             <li><a href="/admin/verifyPanitLt2Dashboard">Panit Lantai 2</a></li>
             <li><a href="/admin/verifyPanitLt3Dashboard">Panit Lantai 3</a></li>
-            <li><a href="/admin/verifyMudhohiDashboard">Mudhohi</a></li>
+            <li><a href="#">Mudhohi</a></li>
           </ul>
         </li>
         <li>
@@ -96,7 +100,7 @@
           <li class="divider">/</li>
           <li><a href="#" class="active">Dashboard</a></li>
           <li class="divider">/</li>
-          <li><a href="#" class="active">Verify Panit Lantai 1</a></li>
+          <li><a href="#" class="active">Verify Mudhohi</a></li>
         </ul>
         <div class="info-data">
           <section class="section" id="explore">
@@ -150,7 +154,7 @@
       integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
       crossorigin="anonymous"
     ></script>
-    <script src="/scripts/verifyPanitLt1DashboardScript.js"></script>
+    <script src="/scripts/verifyMudhohiDashboardScript.js"></script>
     <script>
       // Konfigurasi Firebase
 
@@ -208,7 +212,7 @@
               <p><b>Are you sure want to verify this user?</b></p>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-              <button type="button" class="btn btn-primary verifyButton" data-id="${candidateUser[i].idUserCandidate}" >Yes</button>
+              <button type="button" class="btn btn-primary verifyButton" data-id="${candidateUser[i].idUserCandidate}" data-idmudhohi="${candidateUser[i].idMudhohi}" >Yes</button>
             </div>
             `;
               temp += `</div>
@@ -233,7 +237,8 @@
             idUserCandidate: idUserCandidate,
             name: userCandidate.name,
             username: userCandidate.username,
-            role: userCandidate.role
+            role: userCandidate.role,
+            idMudhohi: userCandidate.mudhohiId
           }
           result.push(candidateObj);
         }
@@ -245,10 +250,11 @@
       candidateUsersRef.on("value", async (snapshot) => {
         const data = snapshot.val();
         if (data) {
+          console.log(data);
           const userCandidates = await transformData(data);
           console.log(userCandidates);
           const filteredData = userCandidates.filter((el) => {
-            return el.role == "panitLt1"
+            return el.role == "mudhohi"
           })
           console.log(filteredData);
           updateDataOnPage(filteredData);
@@ -264,14 +270,16 @@
               const verifyButton = document.querySelectorAll(
                 ".verifyButton"
               );
+              console.log(verifyButton);
               verifyButton.forEach((verifyButton) => {
                 verifyButton.addEventListener("click", async (e) => {
                   e.preventDefault();
                   const idUserCandidate = verifyButton.dataset.id;
-                  console.log(idUserCandidate);
+                  const idMudhohiCandidate = verifyButton.dataset.idmudhohi;
+                  console.log({idUserCandidate, idMudhohiCandidate});
                   // panggil endpoint untuk membuat panitLt1
-                  const url = "/admin/postPanitLt1";
-                  const data = { idUserCandidate };
+                  const url = "/admin/postMudhohi";
+                  const data = { idUserCandidate, idMudhohiCandidate };
                   const option = {
                     method: "POST",
                     headers: {

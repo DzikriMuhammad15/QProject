@@ -63,6 +63,27 @@ module.exports.getVerifyPanitLt1Dashboard = async (req, res) => {
     res.render("verifyPanitLt1Dashboard", { sapi: result, currentUser, firebaseConfig });
 }
 
+module.exports.getVerifyPanitLt2Dashboard = async (req, res) => {
+    const currentUser = res.locals.user;
+    const sapi = await SapiModel.getAllSapi();
+    const result = await transformData(sapi);
+    const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
+    res.render("verifyPanitLt2Dashboard", { sapi: result, currentUser, firebaseConfig });
+}
+module.exports.getVerifyPanitLt3Dashboard = async (req, res) => {
+    const currentUser = res.locals.user;
+    const sapi = await SapiModel.getAllSapi();
+    const result = await transformData(sapi);
+    const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
+    res.render("verifyPanitLt3Dashboard", { sapi: result, currentUser, firebaseConfig });
+}
+module.exports.getVerifyMudhohiDashboard = async (req, res) => {
+    const currentUser = res.locals.user;
+    const sapi = await SapiModel.getAllSapi();
+    const result = await transformData(sapi);
+    const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
+    res.render("verifyMudhohiDashboard", { sapi: result, currentUser, firebaseConfig });
+}
 
 
 
@@ -103,7 +124,7 @@ module.exports.postMudhohi = async (req, res) => {
         const mudhohiCandidate = await MudhohiCandidateModel.getMudhohiById(idMudhohiCandidate);
         const userCandidate = await UserCandidateModel.getUserById(idUserCandidate);
 
-        if (mudhohiCandidate || userCandidate) {
+        if (mudhohiCandidate && userCandidate) {
 
             const mudhohi = { noHP: mudhohiCandidate.noHP, alamat: mudhohiCandidate.alamat, noSapi: mudhohiCandidate.noSapi };
             const mudhohiId = await MudhohiModel.createMudhohi(mudhohi);

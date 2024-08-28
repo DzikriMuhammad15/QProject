@@ -16,7 +16,7 @@
     />
     <link
       rel="stylesheet"
-      href="/stylesheets/verifyPanitLt1DashboardStyle.css"
+      href="/stylesheets/verifyPanitLt3DashboardStyle.css"
     />
     <!-- --------- FAVICON ---------- -->
     <link
@@ -59,9 +59,13 @@
             <i class="bx bx-chevron-right icon-right"></i
           ></a>
           <ul class="side-dropdown show">
-            <li><a href="#" class="active">Panit Lantai 1</a></li>
+            <li>
+              <a href="/admin/verifyPanitLt1Dashboard" class="active"
+                >Panit Lantai 1</a
+              >
+            </li>
             <li><a href="/admin/verifyPanitLt2Dashboard">Panit Lantai 2</a></li>
-            <li><a href="/admin/verifyPanitLt3Dashboard">Panit Lantai 3</a></li>
+            <li><a href="#">Panit Lantai 3</a></li>
             <li><a href="/admin/verifyMudhohiDashboard">Mudhohi</a></li>
           </ul>
         </li>
@@ -96,7 +100,7 @@
           <li class="divider">/</li>
           <li><a href="#" class="active">Dashboard</a></li>
           <li class="divider">/</li>
-          <li><a href="#" class="active">Verify Panit Lantai 1</a></li>
+          <li><a href="#" class="active">Verify Panit Lantai 3</a></li>
         </ul>
         <div class="info-data">
           <section class="section" id="explore">
@@ -150,7 +154,7 @@
       integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
       crossorigin="anonymous"
     ></script>
-    <script src="/scripts/verifyPanitLt1DashboardScript.js"></script>
+    <script src="/scripts/verifyPanitLt3DashboardScript.js"></script>
     <script>
       // Konfigurasi Firebase
 
@@ -248,7 +252,7 @@
           const userCandidates = await transformData(data);
           console.log(userCandidates);
           const filteredData = userCandidates.filter((el) => {
-            return el.role == "panitLt1"
+            return el.role == "panitLt3"
           })
           console.log(filteredData);
           updateDataOnPage(filteredData);
@@ -270,7 +274,7 @@
                   const idUserCandidate = verifyButton.dataset.id;
                   console.log(idUserCandidate);
                   // panggil endpoint untuk membuat panitLt1
-                  const url = "/admin/postPanitLt1";
+                  const url = "/admin/postPanitLt3";
                   const data = { idUserCandidate };
                   const option = {
                     method: "POST",
