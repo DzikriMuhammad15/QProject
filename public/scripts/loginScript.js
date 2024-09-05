@@ -93,7 +93,7 @@ submitSignUp.addEventListener("click", async (e) => {
     }
     else {
       // berhasil
-      console.log(hasil);
+      location.assign("landingPageRegister");
     }
   }
   else if (role == "panitia-lantai-1") {
@@ -118,7 +118,7 @@ submitSignUp.addEventListener("click", async (e) => {
     }
     else {
       // berhasil
-      console.log(hasil);
+      location.assign("landingPageRegister");
     }
   }
   else if (role == "panitia-lantai-2") {
@@ -143,7 +143,7 @@ submitSignUp.addEventListener("click", async (e) => {
     }
     else {
       // berhasil
-      console.log(hasil);
+      location.assign("landingPageRegister");
     }
   }
   else {
@@ -169,7 +169,7 @@ submitSignUp.addEventListener("click", async (e) => {
     }
     else {
       // berhasil
-      console.log(hasil);
+      location.assign("landingPageRegister");
     }
   }
 })

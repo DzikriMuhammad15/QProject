@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pendaftaran Berhasil</title>
+    <link rel="stylesheet" href="/stylesheets/landingPageRegisterStyle.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="message-box">
+        <h1>Pendaftaran Berhasil!</h1>
+        <p>
+          Anda telah berhasil mendaftar. Silakan tunggu admin memverifikasi akun
+          Anda. Terima kasih telah bergabung dengan kami!
+        </p>
+        <button id="backtoHomeButton">Kembali ke Halaman Utama</button>
+      </div>
+    </div>
+    <script>
+      const backtoHomeButton = document.getElementById("backtoHomeButton");
+      backtoHomeButton.addEventListener("click", (e) => {
+        e.preventDefault();
+        location.assign("/");
+      });
+    </script>
+  </body>
+</html>

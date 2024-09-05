@@ -77,6 +77,9 @@ async function isSapiAvailableById(sapiId) {
     return !snapshot.exists();
 }
 
+app.get("/landingPageRegister", (req, res) => {
+    res.render("landingPageRegister");
+})
 
 app.get("/", async (req, res) => {
     const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
