@@ -52,7 +52,7 @@ module.exports.getAdminMain = async (req, res) => {
     const sapi = await SapiModel.getAllSapi();
     const result = await transformData(sapi);
     const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
-    res.render("adminDashboard", { sapi: result, currentUser, firebaseConfig });
+    res.render("adminDashboard", { sapi: result, currentUser, firebaseConfig: {apiKey: firebaseConfig.apiKey, authDomain: firebaseConfig.authDomain, projectId: firebaseConfig.projectId, storageBucket: firebaseConfig.storageBucket, messagingSenderId: firebaseConfig.messagingSenderId, appId: firebaseConfig.appId, measurementId: firebaseConfig.measurementId, databaseURL: process.env.DATABASE_URL } });
 }
 
 module.exports.getVerifyPanitLt1Dashboard = async (req, res) => {
@@ -60,7 +60,7 @@ module.exports.getVerifyPanitLt1Dashboard = async (req, res) => {
     const sapi = await SapiModel.getAllSapi();
     const result = await transformData(sapi);
     const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
-    res.render("verifyPanitLt1Dashboard", { sapi: result, currentUser, firebaseConfig });
+    res.render("verifyPanitLt1Dashboard", { sapi: result, currentUser, firebaseConfig: {apiKey: firebaseConfig.apiKey, authDomain: firebaseConfig.authDomain, projectId: firebaseConfig.projectId, storageBucket: firebaseConfig.storageBucket, messagingSenderId: firebaseConfig.messagingSenderId, appId: firebaseConfig.appId, measurementId: firebaseConfig.measurementId, databaseURL: process.env.DATABASE_URL } });
 }
 
 module.exports.getVerifyPanitLt2Dashboard = async (req, res) => {
@@ -68,21 +68,21 @@ module.exports.getVerifyPanitLt2Dashboard = async (req, res) => {
     const sapi = await SapiModel.getAllSapi();
     const result = await transformData(sapi);
     const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
-    res.render("verifyPanitLt2Dashboard", { sapi: result, currentUser, firebaseConfig });
+    res.render("verifyPanitLt2Dashboard", { sapi: result, currentUser, firebaseConfig: {apiKey: firebaseConfig.apiKey, authDomain: firebaseConfig.authDomain, projectId: firebaseConfig.projectId, storageBucket: firebaseConfig.storageBucket, messagingSenderId: firebaseConfig.messagingSenderId, appId: firebaseConfig.appId, measurementId: firebaseConfig.measurementId, databaseURL: process.env.DATABASE_URL } });
 }
 module.exports.getVerifyPanitLt3Dashboard = async (req, res) => {
     const currentUser = res.locals.user;
     const sapi = await SapiModel.getAllSapi();
     const result = await transformData(sapi);
     const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
-    res.render("verifyPanitLt3Dashboard", { sapi: result, currentUser, firebaseConfig });
+    res.render("verifyPanitLt3Dashboard", { sapi: result, currentUser, firebaseConfig: {apiKey: firebaseConfig.apiKey, authDomain: firebaseConfig.authDomain, projectId: firebaseConfig.projectId, storageBucket: firebaseConfig.storageBucket, messagingSenderId: firebaseConfig.messagingSenderId, appId: firebaseConfig.appId, measurementId: firebaseConfig.measurementId, databaseURL: process.env.DATABASE_URL } });
 }
 module.exports.getVerifyMudhohiDashboard = async (req, res) => {
     const currentUser = res.locals.user;
     const sapi = await SapiModel.getAllSapi();
     const result = await transformData(sapi);
     const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
-    res.render("verifyMudhohiDashboard", { sapi: result, currentUser, firebaseConfig });
+    res.render("verifyMudhohiDashboard", { sapi: result, currentUser, firebaseConfig: {apiKey: firebaseConfig.apiKey, authDomain: firebaseConfig.authDomain, projectId: firebaseConfig.projectId, storageBucket: firebaseConfig.storageBucket, messagingSenderId: firebaseConfig.messagingSenderId, appId: firebaseConfig.appId, measurementId: firebaseConfig.measurementId, databaseURL: process.env.DATABASE_URL } });
 }
 
 

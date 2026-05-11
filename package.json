@@ -1,7 +1,6 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -21,5 +20,14 @@
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
     "path": "^0.12.7"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DzikriMuhammad15/QProject.git"
+  },
+  "bugs": {
+    "url": "https://github.com/DzikriMuhammad15/QProject/issues"
+  },
+  "homepage": "https://github.com/DzikriMuhammad15/QProject#readme",
+  "description": ""
 }

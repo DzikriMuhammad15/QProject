@@ -26,28 +26,28 @@ async function isSapiState(sapiId, expectedState) {
 module.exports.getPanitLt2Dashboard = async (req, res) => {
     const currentUser = res.locals.user;
     const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
-    res.render("panitLt2Dashboard", { currentUser, firebaseConfig });
+    res.render("panitLt2Dashboard", { currentUser, firebaseConfig: {apiKey: firebaseConfig.apiKey, authDomain: firebaseConfig.authDomain, projectId: firebaseConfig.projectId, storageBucket: firebaseConfig.storageBucket, messagingSenderId: firebaseConfig.messagingSenderId, appId: firebaseConfig.appId, measurementId: firebaseConfig.measurementId, databaseURL: process.env.DATABASE_URL } });
 }
 
 module.exports.setPemrosesanDagingDashboard = async (req, res) => {
     const currentUser = res.locals.user;
     const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
-    res.render("setPemrosesanDagingDashboard", { currentUser, firebaseConfig });
+    res.render("setPemrosesanDagingDashboard", { currentUser, firebaseConfig: {apiKey: firebaseConfig.apiKey, authDomain: firebaseConfig.authDomain, projectId: firebaseConfig.projectId, storageBucket: firebaseConfig.storageBucket, messagingSenderId: firebaseConfig.messagingSenderId, appId: firebaseConfig.appId, measurementId: firebaseConfig.measurementId, databaseURL: process.env.DATABASE_URL } });
 }
 module.exports.revertPemrosesanDagingDashboard = async (req, res) => {
     const currentUser = res.locals.user;
     const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
-    res.render("revertPemrosesanDagingDashboard", { currentUser, firebaseConfig });
+    res.render("revertPemrosesanDagingDashboard", { currentUser, firebaseConfig: {apiKey: firebaseConfig.apiKey, authDomain: firebaseConfig.authDomain, projectId: firebaseConfig.projectId, storageBucket: firebaseConfig.storageBucket, messagingSenderId: firebaseConfig.messagingSenderId, appId: firebaseConfig.appId, measurementId: firebaseConfig.measurementId, databaseURL: process.env.DATABASE_URL } });
 }
 module.exports.setReadyDeliverDashboard = async (req, res) => {
     const currentUser = res.locals.user;
     const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
-    res.render("setReadyDeliverDashboard", { currentUser, firebaseConfig });
+    res.render("setReadyDeliverDashboard", { currentUser, firebaseConfig: {apiKey: firebaseConfig.apiKey, authDomain: firebaseConfig.authDomain, projectId: firebaseConfig.projectId, storageBucket: firebaseConfig.storageBucket, messagingSenderId: firebaseConfig.messagingSenderId, appId: firebaseConfig.appId, measurementId: firebaseConfig.measurementId, databaseURL: process.env.DATABASE_URL } });
 }
 module.exports.revertReadyDeliverDashboard = async (req, res) => {
     const currentUser = res.locals.user;
     const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
-    res.render("revertReadyDeliverDashboard", { currentUser, firebaseConfig });
+    res.render("revertReadyDeliverDashboard", { currentUser, firebaseConfig: {apiKey: firebaseConfig.apiKey, authDomain: firebaseConfig.authDomain, projectId: firebaseConfig.projectId, storageBucket: firebaseConfig.storageBucket, messagingSenderId: firebaseConfig.messagingSenderId, appId: firebaseConfig.appId, measurementId: firebaseConfig.measurementId, databaseURL: process.env.DATABASE_URL } });
 }
 
 

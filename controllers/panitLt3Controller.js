@@ -79,7 +79,7 @@ module.exports.getPanitLt3Dashboard = async (req, res) => {
     const currentUser = res.locals.user;
     // console.log({ role: "panitLt3", currentUser });
     const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
-    res.render("panitLt3Dashboard", { currentUser, firebaseConfig })
+    res.render("panitLt3Dashboard", { currentUser, firebaseConfig: {apiKey: firebaseConfig.apiKey, authDomain: firebaseConfig.authDomain, projectId: firebaseConfig.projectId, storageBucket: firebaseConfig.storageBucket, messagingSenderId: firebaseConfig.messagingSenderId, appId: firebaseConfig.appId, measurementId: firebaseConfig.measurementId, databaseURL: process.env.DATABASE_URL } })
 }
 
 
@@ -87,21 +87,21 @@ module.exports.changeStatusDashboard = async (req, res) => {
     const currentUser = res.locals.user;
     // console.log({ role: "panitLt3", currentUser });
     const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
-    res.render("changeStatusLt3", { currentUser, firebaseConfig })
+    res.render("changeStatusLt3", { currentUser, firebaseConfig: {apiKey: firebaseConfig.apiKey, authDomain: firebaseConfig.authDomain, projectId: firebaseConfig.projectId, storageBucket: firebaseConfig.storageBucket, messagingSenderId: firebaseConfig.messagingSenderId, appId: firebaseConfig.appId, measurementId: firebaseConfig.measurementId, databaseURL: process.env.DATABASE_URL } })
 }
 
 module.exports.revertDeliverLt3 = async (req, res) => {
     const currentUser = res.locals.user;
     // console.log({ role: "panitLt3", currentUser });
     const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
-    res.render("revertDeliverLt3", { currentUser, firebaseConfig })
+    res.render("revertDeliverLt3", { currentUser, firebaseConfig: {apiKey: firebaseConfig.apiKey, authDomain: firebaseConfig.authDomain, projectId: firebaseConfig.projectId, storageBucket: firebaseConfig.storageBucket, messagingSenderId: firebaseConfig.messagingSenderId, appId: firebaseConfig.appId, measurementId: firebaseConfig.measurementId, databaseURL: process.env.DATABASE_URL } })
 }
 
 module.exports.revertPostponeLt3 = async (req, res) => {
     const currentUser = res.locals.user;
     // console.log({ role: "panitLt3", currentUser });
     const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
-    res.render("revertPostponeLt3", { currentUser, firebaseConfig })
+    res.render("revertPostponeLt3", { currentUser, firebaseConfig: {apiKey: firebaseConfig.apiKey, authDomain: firebaseConfig.authDomain, projectId: firebaseConfig.projectId, storageBucket: firebaseConfig.storageBucket, messagingSenderId: firebaseConfig.messagingSenderId, appId: firebaseConfig.appId, measurementId: firebaseConfig.measurementId, databaseURL: process.env.DATABASE_URL } })
 }
 
 module.exports.deliver = async (req, res) => {

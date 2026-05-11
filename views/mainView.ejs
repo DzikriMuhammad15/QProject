@@ -378,8 +378,10 @@
 
             // Listen untuk perubahan data
             sapiRef.on("value", async (snapshot) => {
+              console.log("TRIGGERED");
+              console.log("RAW DATA:", snapshot.val());
               const data = snapshot.val();
-              // console.log(data);
+              console.log(data);
               if (data) {
                 const sapiArray = await transformData(data);
                 console.log(sapiArray);

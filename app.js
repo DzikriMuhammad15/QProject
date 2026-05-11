@@ -65,6 +65,7 @@ const SapiModel = require("./models/sapiModel");
 const database = require("./firebaseConfig");
 const UserCandidateModel = require("./models/userCandidateModel");
 const MudhohiCandidateModel = require("./models/mudhohiCandidateModel");
+const { auth } = require('firebase-admin');
 
 async function isUsernameAvailable(username) {
     const snapshot1 = await database.ref('users').orderByChild('username').equalTo(username).once('value');
@@ -84,7 +85,7 @@ app.get("/landingPageRegister", (req, res) => {
 app.get("/", async (req, res) => {
     const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
     console.log(firebaseConfig);
-    res.render("mainView", { firebaseConfig });
+    res.render("mainView", { firebaseConfig: {apiKey: firebaseConfig.apiKey, authDomain: firebaseConfig.authDomain, projectId: firebaseConfig.projectId, storageBucket: firebaseConfig.storageBucket, messagingSenderId: firebaseConfig.messagingSenderId, appId: firebaseConfig.appId, measurementId: firebaseConfig.measurementId, databaseURL: process.env.DATABASE_URL } });
 })
 app.post("/postPanitLt1", async (req, res) => {
     try {

@@ -25,17 +25,17 @@ async function isSapiState(sapiId, expectedState) {
 module.exports.getPanitLt1Dashboard = async (req, res) => {
     const currentUser = res.locals.user;
     const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
-    res.render("panitLt1Dashboard", { currentUser, firebaseConfig });
+    res.render("panitLt1Dashboard", { currentUser, firebaseConfig: {apiKey: firebaseConfig.apiKey, authDomain: firebaseConfig.authDomain, projectId: firebaseConfig.projectId, storageBucket: firebaseConfig.storageBucket, messagingSenderId: firebaseConfig.messagingSenderId, appId: firebaseConfig.appId, measurementId: firebaseConfig.measurementId, databaseURL: process.env.DATABASE_URL } });
 }
 module.exports.getChangeStatusPanitLt1Dashboard = async (req, res) => {
     const currentUser = res.locals.user;
     const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
-    res.render("changeStatusPanitLt1", { currentUser, firebaseConfig });
+    res.render("changeStatusPanitLt1", { currentUser, firebaseConfig: {apiKey: firebaseConfig.apiKey, authDomain: firebaseConfig.authDomain, projectId: firebaseConfig.projectId, storageBucket: firebaseConfig.storageBucket, messagingSenderId: firebaseConfig.messagingSenderId, appId: firebaseConfig.appId, measurementId: firebaseConfig.measurementId, databaseURL: process.env.DATABASE_URL } });
 }
 module.exports.getRevertStatusPanitLt1Dashboard = async (req, res) => {
     const currentUser = res.locals.user;
     const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
-    res.render("revertStatusPanitLt1", { currentUser, firebaseConfig });
+    res.render("revertStatusPanitLt1", { currentUser, firebaseConfig: {apiKey: firebaseConfig.apiKey, authDomain: firebaseConfig.authDomain, projectId: firebaseConfig.projectId, storageBucket: firebaseConfig.storageBucket, messagingSenderId: firebaseConfig.messagingSenderId, appId: firebaseConfig.appId, measurementId: firebaseConfig.measurementId, databaseURL: process.env.DATABASE_URL } });
 }
 
 
