@@ -3,60 +3,26 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Stylesheets -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
-      crossorigin="anonymous"
-    />
-    <link
-      href="https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css"
-      rel="stylesheet"
-    />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link href="https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="/stylesheets/adminStyle.css" />
-    <!-- --------- FAVICON ---------- -->
-    <link
-      rel="shortcut icon"
-      href="assets/img/logiPsikologi.png"
-      type="image/x-icon"
-    />
     <title>Qurban</title>
-    <!-- font awesome icon -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
-      integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    />
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <!-- Firebase SDK v8 -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <!-- SheetJS untuk generate Excel di client -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   </head>
   <body>
     <!-- SIDEBAR -->
     <section id="sidebar">
-      <a href="#" class="brand"
-        ><i
-          class="fa-solid fa-star-and-crescent icon"
-          style="color: #74c0fc"
-        ></i>
-        Qurban</a
-      >
+      <a href="#" class="brand"><i class="fa-solid fa-star-and-crescent icon" style="color: #74c0fc"></i> Qurban</a>
       <ul class="side-menu">
-        <li>
-          <a href="#" class="active"
-            ><i class="bx bxs-dashboard icon"></i> Dashboard</a
-          >
-        </li>
+        <li><a href="#" class="active"><i class="bx bxs-dashboard icon"></i> Dashboard</a></li>
         <li class="divider" data-text="main">Main</li>
         <li>
-          <a href="#"
-            ><i class="bx bxs-inbox icon"></i> Verify User
-            <i class="bx bx-chevron-right icon-right"></i
-          ></a>
+          <a href="#"><i class="bx bxs-inbox icon"></i> Verify User <i class="bx bx-chevron-right icon-right"></i></a>
           <ul class="side-dropdown">
             <li><a href="/admin/verifyPanitLt1Dashboard">Panit Lantai 1</a></li>
             <li><a href="/admin/verifyPanitLt2Dashboard">Panit Lantai 2</a></li>
@@ -76,11 +42,7 @@
         <div class="profile">
           <img src="/img/people.png" alt="" />
           <ul class="profile-link">
-            <li>
-              <a data-bs-toggle="modal" data-bs-target="#modalLogout"
-                ><i class="bx bxs-log-out-circle"></i> Logout</a
-              >
-            </li>
+            <li><a data-bs-toggle="modal" data-bs-target="#modalLogout"><i class="bx bxs-log-out-circle"></i> Logout</a></li>
           </ul>
         </div>
       </nav>
@@ -93,18 +55,22 @@
           <li class="divider">/</li>
           <li><a href="#" class="active">Dashboard</a></li>
         </ul>
-        <button
-          type="button"
-          class="btn btn-primary"
-          id="buttonAddSapi"
-          data-bs-toggle="modal"
-          data-bs-target="#addSapiModal"
-        >
-          Add Sapi
-        </button>
+
+        <div class="d-flex gap-2 mb-3 flex-wrap">
+          <button type="button" class="btn btn-primary" id="buttonAddSapi" data-bs-toggle="modal" data-bs-target="#addSapiModal">
+            <i class="fa-solid fa-cow me-1"></i> Add Sapi
+          </button>
+          <button type="button" class="btn btn-success" id="buttonAddKambing" data-bs-toggle="modal" data-bs-target="#addKambingModal">
+            <i class="fa-solid fa-hippo me-1"></i> Add Kambing
+          </button>
+          <button type="button" class="btn btn-warning" id="buttonDownloadExcel" onclick="downloadExcel()">
+            <i class="fa-solid fa-file-excel me-1"></i> Download Snapshot Excel
+          </button>
+        </div>
+
         <div class="info-data">
           <section class="section" id="explore">
-            <!-- Project boxes will be dynamically inserted here -->
+            <!-- Hewan boxes will be dynamically inserted here -->
           </section>
         </div>
         <div class="data"></div>
@@ -115,166 +81,135 @@
     <div class="modal fade" id="modalLogout" tabindex="-1">
       <div class="modal-dialog">
         <div class="modal-content">
-          <div class="modal-header">
-            <h1 class="modal-title fs-5" id="exampleModalLabel">Logout</h1>
-          </div>
+          <div class="modal-header"><h1 class="modal-title fs-5">Logout</h1></div>
           <div class="modal-body">Are you sure want to logout?</div>
           <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-bs-dismiss="modal"
-            >
-              Back
-            </button>
-            <a href="/auth/logout">
-              <button type="button" class="btn btn-danger lastLogoutButton">
-                Logout
-              </button>
-            </a>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Back</button>
+            <a href="/auth/logout"><button type="button" class="btn btn-danger lastLogoutButton">Logout</button></a>
           </div>
         </div>
       </div>
     </div>
 
     <!-- ADD SAPI MODAL -->
-
-    <div
-      class="modal fade"
-      id="addSapiModal"
-      tabindex="-1"
-      aria-labelledby="exampleModalLabel"
-      aria-hidden="true"
-    >
+    <div class="modal fade" id="addSapiModal" tabindex="-1" aria-labelledby="addSapiModalLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h1 class="modal-title fs-5" id="exampleModalLabel">Add Sapi</h1>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
+            <h1 class="modal-title fs-5" id="addSapiModalLabel">Add Sapi</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <form id="formAddSapi">
               <div class="mb-3">
-                <label for="exampleInputEmail1" class="form-label"
-                  >No Sapi</label
-                >
-                <input
-                  type="number"
-                  class="form-control"
-                  id="noSapiInput"
-                  aria-describedby="emailHelp"
-                />
+                <label class="form-label">No Sapi</label>
+                <input type="number" class="form-control" id="noSapiInput" />
                 <div class="error" id="addSapiError"></div>
               </div>
             </form>
           </div>
           <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-bs-dismiss="modal"
-            >
-              Close
-            </button>
-            <button
-              type="button"
-              class="btn btn-primary"
-              id="submitAddSapiForm"
-            >
-              Add Sapi
-            </button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary" id="submitAddSapiForm">Add Sapi</button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ADD SAPI MODAL END -->
+    <!-- ADD KAMBING MODAL -->
+    <div class="modal fade" id="addKambingModal" tabindex="-1" aria-labelledby="addKambingModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="addKambingModalLabel">Add Kambing</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="formAddKambing">
+              <div class="mb-3">
+                <label class="form-label">No Kambing</label>
+                <input type="number" class="form-control" id="noKambingInput" />
+                <div class="error" id="addKambingError"></div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-success" id="submitAddKambingForm">Add Kambing</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- JavaScript SDK -->
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-      crossorigin="anonymous"
-    ></script>
-    <script
-      src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
-      integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
-      crossorigin="anonymous"
-    ></script>
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
-      integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
-      crossorigin="anonymous"
-    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
     <script src="scripts/adminScript.js"></script>
     <script>
-      // Konfigurasi Firebase
-
-      // Inisialisasi Firebase
       var firebaseConfig = <%- JSON.stringify(firebaseConfig) %>;
       firebase.initializeApp(firebaseConfig);
       const database = firebase.database();
 
-      // Referensi ke path data sapi
-      const sapiRef = database.ref("sapi/");
-
-      // Fungsi untuk memperbarui konten halaman
-      function updateDataOnPage(sapi) {
+      // =============================================================
+      // REALTIME UPDATE - Listen sapi & kambing sekaligus
+      // =============================================================
+      function renderHewan(hewanArray) {
         const exploreSection = document.getElementById("explore");
-        exploreSection.innerHTML = ""; // Kosongkan kontainer
+        exploreSection.innerHTML = "";
         const body = document.querySelector("body");
 
-        for (let index = 0; index < Math.floor(sapi.length / 3) + 1; index++) {
+        // Hapus semua modal hewan lama yang ada di body (kecuali modal sistem)
+        document.querySelectorAll('[id^="modalHewan-"]').forEach(el => el.remove());
+
+        for (let index = 0; index < Math.ceil(hewanArray.length / 3); index++) {
           const projectContainer = document.createElement("div");
           projectContainer.className = "project-container";
 
           for (let i = index * 3; i < index * 3 + 3; i++) {
-            if (i < sapi.length) {
+            if (i < hewanArray.length) {
+              const hewan = hewanArray[i];
+              const modalId = `modalHewan-${hewan.jenis}-${hewan.idHewan}`;
+
               const projectBox = document.createElement("div");
               projectBox.className = "project-box";
               projectBox.setAttribute("data-bs-toggle", "modal");
-              projectBox.setAttribute(
-                "data-bs-target",
-                `#modalSapi${sapi[i].idSapi}`
-              );
+              projectBox.setAttribute("data-bs-target", `#${modalId}`);
 
+              const iconClass = hewan.jenis === 'kambing' ? 'fa-solid fa-hippo' : 'fa-solid fa-cow';
+              const iconColor = hewan.jenis === 'kambing' ? '#82C57A' : '#74C0FC';
               projectBox.innerHTML = `
-                <i class="fa-solid fa-cow" style="color: #74C0FC;"></i>
-                <h3>Sapi ${sapi[i].idSapi}</h3>
-                <label>${sapi[i].state}</label>
+                <i class="${iconClass}" style="color: ${iconColor};"></i>
+                <h3>${hewan.jenis === 'kambing' ? 'Kambing' : 'Sapi'} ${hewan.idHewan}</h3>
+                <label>${hewan.state}</label>
               `;
               projectContainer.appendChild(projectBox);
-              // buat modal
+
+              // Buat modal
               const modal = document.createElement("div");
               modal.className = "modal fade";
-              modal.setAttribute("id", `modalSapi${sapi[i].idSapi}`);
+              modal.setAttribute("id", modalId);
               modal.setAttribute("tabindex", "-1");
-              modal.setAttribute("aria-labelledby", "exampleModalLabel");
               modal.setAttribute("aria-hidden", "true");
-              var temp = `<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h1 class="modal-title fs-5" id="exampleModalLabel">Sapi ${sapi[i].idSapi}</h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-            <div class="modal-body">
-            `;
-              var mudhohis = sapi[i].mudhohi;
-              mudhohis.forEach((mudhohi) => {
-                temp += `<hr>
-              <h2 class="fs-5">${mudhohi.name}</h2>
-              <p>${mudhohi.alamat}</p>`;
-              });
-              temp += `</div>
-        </div>
-      </div>`;
 
+              let temp = `<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h1 class="modal-title fs-5">${hewan.jenis === 'kambing' ? 'Kambing' : 'Sapi'} ${hewan.idHewan}</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">`;
+
+              if (hewan.mudhohi && hewan.mudhohi.length > 0) {
+                hewan.mudhohi.forEach((mudhohi) => {
+                  temp += `<hr><h2 class="fs-5">${mudhohi.name || ''}</h2><p>${mudhohi.alamat || ''}</p>`;
+                });
+              } else {
+                temp += `<p class="text-muted">Belum ada mudhohi terdaftar.</p>`;
+              }
+
+              temp += `</div></div></div>`;
               modal.innerHTML = temp;
               body.appendChild(modal);
             }
@@ -283,144 +218,232 @@
         }
       }
 
-      async function transformData(data) {
+      async function transformHewan(sapiData, kambingData) {
         const result = [];
 
-        // Loop melalui setiap key di object data
-        for (const idSapi in data) {
-          const sapi = data[idSapi];
-          const sapiObj = {
-            idSapi: idSapi,
-            foto: sapi.foto,
-            state: sapi.state,
-            mudhohi: [],
-          };
-
-          // Loop melalui setiap key di dalam object sapi
-          for (const key in sapi) {
-            if (
-              key !== "foto" &&
-              key !== "state" &&
-              typeof sapi[key] === "object"
-            ) {
-              // Fetch mudhohi data from "mudhohis/"
-              const mudhohiObj = await database
-                .ref("mudhohis/" + key)
-                .once("value")
-                .then((snapshot) => snapshot.val());
-
-              // Fetch name from "users/" based on mudhohiId
-              const userObj = await database
-                .ref("users/")
-                .orderByChild("mudhohiId")
-                .equalTo(key)
-                .once("value")
-                .then((snapshot) => {
-                  const userData = snapshot.val();
-                  if (userData) {
-                    // Since the result is an object, retrieve the first user's name
-                    const firstUserKey = Object.keys(userData)[0];
-                    return userData[firstUserKey].name;
-                  }
+        // Proses sapi
+        if (sapiData) {
+          for (const idSapi in sapiData) {
+            const sapi = sapiData[idSapi];
+            const obj = { idHewan: idSapi, jenis: 'sapi', state: sapi.state, mudhohi: [] };
+            for (const key in sapi) {
+              if (key !== 'foto' && key !== 'state' && typeof sapi[key] === 'object') {
+                const mudhohiObj = await database.ref("mudhohis/" + key).once("value").then(s => s.val());
+                const userObj = await database.ref("users/").orderByChild("mudhohiId").equalTo(key).once("value").then(s => {
+                  const d = s.val();
+                  if (d) { const k = Object.keys(d)[0]; return d[k].name; }
                   return null;
                 });
-
-              // Add mudhohi object with the name to sapiObj
-              sapiObj.mudhohi.push({
-                idMudhohi: key,
-                ...mudhohiObj,
-                name: userObj,
-              });
+                obj.mudhohi.push({ idMudhohi: key, ...mudhohiObj, name: userObj });
+              }
             }
+            result.push(obj);
           }
+        }
 
-          result.push(sapiObj);
+        // Proses kambing
+        if (kambingData) {
+          for (const idKambing in kambingData) {
+            const kambing = kambingData[idKambing];
+            const obj = { idHewan: idKambing, jenis: 'kambing', state: kambing.state, mudhohi: [] };
+            for (const key in kambing) {
+              if (key !== 'foto' && key !== 'state' && typeof kambing[key] === 'object') {
+                const mudhohiObj = await database.ref("mudhohis/" + key).once("value").then(s => s.val());
+                const userObj = await database.ref("users/").orderByChild("mudhohiId").equalTo(key).once("value").then(s => {
+                  const d = s.val();
+                  if (d) { const k = Object.keys(d)[0]; return d[k].name; }
+                  return null;
+                });
+                obj.mudhohi.push({ idMudhohi: key, ...mudhohiObj, name: userObj });
+              }
+            }
+            result.push(obj);
+          }
         }
 
         return result;
       }
 
-      // Listen untuk perubahan data
-      sapiRef.on("value", async (snapshot) => {
-        const data = snapshot.val();
-        // console.log(data);
-        if (data) {
-          const sapiArray = await transformData(data);
-          console.log(sapiArray);
-          updateDataOnPage(sapiArray);
-        }
+      // Simpan data realtime di variabel global
+      let latestSapiData = null;
+      let latestKambingData = null;
+
+      async function refreshView() {
+        const hewanArray = await transformHewan(latestSapiData, latestKambingData);
+        renderHewan(hewanArray);
+      }
+
+      database.ref("sapi/").on("value", async (snapshot) => {
+        latestSapiData = snapshot.val();
+        refreshView();
       });
 
-      const buttonAddSapi = document.getElementById("buttonAddSapi");
-      buttonAddSapi.addEventListener("click", (e) => {
-        e.preventDefault();
+      database.ref("kambing/").on("value", async (snapshot) => {
+        latestKambingData = snapshot.val();
+        refreshView();
+      });
 
-        document.getElementById("submitAddSapiForm").addEventListener("click", async (e) => {
-          e.preventDefault();
+      // =============================================================
+      // ADD SAPI
+      // =============================================================
+      document.getElementById("buttonAddSapi").addEventListener("click", () => {
+        document.getElementById("submitAddSapiForm").onclick = async () => {
           const noSapi = parseInt(document.getElementById("noSapiInput").value);
-          const url = "/admin/postSapi";
-                  const data = { foto: "", noSapi, state: "Belum Disembelih" };
-                  const option = {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(data),
-                  };
-                  const result = await fetch(url, option);
-                  const statusCode = result.status;
-                  const hasil = await result.json();
-                  const addSapiError = document.getElementById("addSapiError");
-                  if (statusCode != 200) {
-                    addSapiError.textContent = hasil.message;
-                  } else {
-                    console.log("berhasil fetch");
+          const addSapiError = document.getElementById("addSapiError");
+          if (isNaN(noSapi)) { addSapiError.textContent = "Masukkan nomor sapi yang valid"; return; }
+          const result = await fetch("/admin/postSapi", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ foto: "", noSapi, state: "Belum Disembelih" })
+          });
+          const statusCode = result.status;
+          const hasil = await result.json();
+          if (statusCode !== 200) {
+            addSapiError.textContent = hasil.message;
+          } else {
+            addSapiError.innerHTML = "";
+            document.getElementById("noSapiInput").value = "";
+            const modalEl = document.getElementById("addSapiModal");
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            if (modalInstance) {
+              modalInstance.hide();
+              setTimeout(() => {
+                modalEl.classList.remove("show");
+                modalEl.removeAttribute("aria-modal");
+                modalEl.style.display = "none";
+                const backdrop = document.querySelector(".modal-backdrop");
+                if (backdrop) backdrop.remove();
+                document.body.classList.remove("modal-open");
+                document.body.style = "";
+                modalInstance.dispose();
+              }, 300);
+            }
+          }
+        };
+      });
 
-                    // Temukan elemen modal berdasarkan id sapi
-                    const modalElement = document.getElementById(
-                      `addSapiModal`
-                    );
+      document.getElementById("formAddSapi").addEventListener("submit", e => e.preventDefault());
 
-                    // Pastikan modal diakses dengan aman
-                    if (modalElement) {
-                      // Jika menggunakan Bootstrap 5 dan modal instance diperlukan
-                      const modalInstance =
-                        bootstrap.Modal.getInstance(modalElement);
-                      if (modalInstance) {
-                        modalInstance.hide(); // Menutup modal dengan Bootstrap
+      // =============================================================
+      // ADD KAMBING
+      // =============================================================
+      document.getElementById("buttonAddKambing").addEventListener("click", () => {
+        document.getElementById("submitAddKambingForm").onclick = async () => {
+          const noKambing = parseInt(document.getElementById("noKambingInput").value);
+          const addKambingError = document.getElementById("addKambingError");
+          if (isNaN(noKambing)) { addKambingError.textContent = "Masukkan nomor kambing yang valid"; return; }
+          const result = await fetch("/admin/postKambing", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ foto: "", noKambing, state: "Belum Disembelih" })
+          });
+          const statusCode = result.status;
+          const hasil = await result.json();
+          if (statusCode !== 200) {
+            addKambingError.textContent = hasil.message;
+          } else {
+            addKambingError.innerHTML = "";
+            document.getElementById("noKambingInput").value = "";
+            const modalEl = document.getElementById("addKambingModal");
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            if (modalInstance) {
+              modalInstance.hide();
+              setTimeout(() => {
+                modalEl.classList.remove("show");
+                modalEl.removeAttribute("aria-modal");
+                modalEl.style.display = "none";
+                const backdrop = document.querySelector(".modal-backdrop");
+                if (backdrop) backdrop.remove();
+                document.body.classList.remove("modal-open");
+                document.body.style = "";
+                modalInstance.dispose();
+              }, 300);
+            }
+          }
+        };
+      });
 
-                        // Berikan waktu agar Bootstrap menyelesaikan proses tutup modal
-                        setTimeout(() => {
-                          // Hapus modal element jika perlu
-                          modalElement.classList.remove("show");
-                          modalElement.removeAttribute("aria-modal");
-                          modalElement.style.display = "none";
+      document.getElementById("formAddKambing").addEventListener("submit", e => e.preventDefault());
 
-                          // Hilangkan backdrop
-                          const modalBackdrop =
-                            document.querySelector(".modal-backdrop");
-                          if (modalBackdrop) {
-                            modalBackdrop.remove();
-                          }
+      // =============================================================
+      // DOWNLOAD SNAPSHOT EXCEL
+      // Gambar (bukti) dimasukkan sebagai hyperlink URL di sel Excel
+      // =============================================================
+      async function downloadExcel() {
+        const btn = document.getElementById("buttonDownloadExcel");
+        btn.disabled = true;
+        btn.textContent = "Memproses...";
 
-                          // Kembalikan scroll pada body
-                          document.body.classList.remove("modal-open");
-                          document.body.style = "";
+        try {
+          const response = await fetch("/admin/snapshot");
+          if (!response.ok) throw new Error("Gagal mengambil data snapshot");
+          const json = await response.json();
+          const rows = json.data;
 
-                          modalInstance.dispose(); // Hapus instance modal
-                        }, 300); // Menunda selama 300ms
-                      }
-                    }
-                    addSapiError.innerHTML = "";
-                    document.getElementById("noSapiInput").value = "";
-                  }
+          // Header kolom
+          const headers = [
+            "Jenis Hewan", "No Hewan", "State", "Foto Hewan (URL)",
+            "ID Mudhohi", "Nama Mudhohi", "Alamat", "No HP",
+            "Sudah Dikirim?", "Tertunda?", "Bukti (URL)", "Username Pengirim"
+          ];
 
-        })
-      })
+          const wsData = [headers];
+          rows.forEach(row => {
+            wsData.push([
+              row.jenis,
+              row.noHewan,
+              row.state,
+              row.fotoHewan,
+              row.idMudhohi,
+              row.namaMudhohi,
+              row.alamat,
+              row.noHP,
+              row.isDelivered,
+              row.isPostponed,
+              row.bukti,
+              row.usernamePengirim
+            ]);
+          });
 
-      document.getElementById("formAddSapi").addEventListener("submit", (e) => {
-        e.preventDefault();
-      })
+          const wb = XLSX.utils.book_new();
+          const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+          // Lebar kolom otomatis
+          ws['!cols'] = [
+            { wch: 12 }, { wch: 10 }, { wch: 28 }, { wch: 40 },
+            { wch: 28 }, { wch: 20 }, { wch: 30 }, { wch: 15 },
+            { wch: 14 }, { wch: 10 }, { wch: 40 }, { wch: 20 }
+          ];
+
+          // Buat hyperlink untuk kolom Foto Hewan (kolom D, index 3) dan Bukti (kolom K, index 10)
+          rows.forEach((row, i) => {
+            const rowNum = i + 2; // baris ke-2 dst (baris 1 = header)
+
+            // Foto Hewan
+            if (row.fotoHewan && row.fotoHewan.startsWith('http')) {
+              const cellRef = XLSX.utils.encode_cell({ r: rowNum - 1, c: 3 });
+              ws[cellRef] = { v: row.fotoHewan, l: { Target: row.fotoHewan, Tooltip: "Lihat foto hewan" } };
+            }
+
+            // Bukti pengiriman
+            if (row.bukti && row.bukti.startsWith('http')) {
+              const cellRef = XLSX.utils.encode_cell({ r: rowNum - 1, c: 10 });
+              ws[cellRef] = { v: row.bukti, l: { Target: row.bukti, Tooltip: "Lihat bukti pengiriman" } };
+            }
+          });
+
+          XLSX.utils.book_append_sheet(wb, ws, "Snapshot Qurban");
+
+          const now = new Date();
+          const timestamp = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+          XLSX.writeFile(wb, `snapshot_qurban_${timestamp}.xlsx`);
+        } catch (err) {
+          alert("Gagal download Excel: " + err.message);
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-file-excel me-1"></i> Download Snapshot Excel';
+        }
+      }
     </script>
   </body>
 </html>

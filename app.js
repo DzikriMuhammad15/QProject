@@ -158,11 +158,30 @@ app.post("/postPanitLt3", async (req, res) => {
 
 app.post("/postMudhohi", async (req, res) => {
     try {
-        const { name, alamat, noHP, username, password, noSapi } = req.body;
-        var tidakAdaSapi = await isSapiAvailableById(noSapi);
-        if (tidakAdaSapi) {
-            return res.status(400).json({ message: "there's no sapi with that id" })
+        const { name, alamat, noHP, username, password, noSapi, noKambing } = req.body;
+
+        // Validasi: harus menyertakan salah satu dari noSapi atau noKambing
+        const hasSapi = noSapi !== undefined && noSapi !== null && noSapi !== '';
+        const hasKambing = noKambing !== undefined && noKambing !== null && noKambing !== '';
+
+        if (!hasSapi && !hasKambing) {
+            return res.status(400).json({ message: "Harus menyertakan noSapi atau noKambing" });
         }
+
+        if (hasSapi) {
+            var tidakAdaSapi = await isSapiAvailableById(noSapi);
+            if (tidakAdaSapi) {
+                return res.status(400).json({ message: "there's no sapi with that id" });
+            }
+        }
+
+        if (hasKambing) {
+            const snapshotKambing = await database.ref('kambing').child(noKambing).once('value');
+            if (!snapshotKambing.exists()) {
+                return res.status(400).json({ message: "there's no kambing with that id" });
+            }
+        }
+
         var usernameAvailable = await isUsernameAvailable(username);
         if (!usernameAvailable) {
             return res.status(400).json({ message: "username not available" });
@@ -174,7 +193,10 @@ app.post("/postMudhohi", async (req, res) => {
         // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const mudhohi = { noHP, alamat, noSapi };
+        const mudhohi = { noHP, alamat };
+        if (hasSapi) mudhohi.noSapi = noSapi;
+        if (hasKambing) mudhohi.noKambing = noKambing;
+
         const mudhohiId = await MudhohiCandidateModel.createMudhohi(mudhohi);
 
         const user = { name, username, password: hashedPassword, role: "mudhohi", mudhohiId };

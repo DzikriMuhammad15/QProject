@@ -34,6 +34,8 @@
     <!-- Firebase SDK v8 -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <!-- SheetJS untuk generate Excel di client -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   </head>
   <body>
     <!-- SIDEBAR -->
@@ -102,6 +104,11 @@
           <li><a href="#" class="active">Dashboard</a></li>
         </ul>
         <div class="info-data">
+          <div class="mb-3">
+            <button type="button" class="btn btn-warning" onclick="downloadExcel()">
+              <i class="fa-solid fa-file-excel me-1"></i> Download Snapshot Excel
+            </button>
+          </div>
           <section class="section" id="explore">
             <!-- Project boxes will be dynamically inserted here -->
           </section>
@@ -351,6 +358,65 @@
           updateDataOnPage(sapiArray);
         }
       });
+
+      // =============================================================
+      // DOWNLOAD SNAPSHOT EXCEL (panitLt2)
+      // =============================================================
+      async function downloadExcel() {
+        const btn = document.querySelector('[onclick="downloadExcel()"]');
+        if (btn) { btn.disabled = true; btn.textContent = "Memproses..."; }
+        try {
+          const response = await fetch("/panitLt2/snapshot");
+          if (!response.ok) throw new Error("Gagal mengambil data snapshot");
+          const json = await response.json();
+          const rows = json.data;
+
+          const headers = [
+            "Jenis Hewan", "No Hewan", "State", "Foto Hewan (URL)",
+            "ID Mudhohi", "Nama Mudhohi", "Alamat", "No HP",
+            "Sudah Dikirim?", "Tertunda?", "Bukti (URL)", "Username Pengirim"
+          ];
+
+          const wsData = [headers];
+          rows.forEach(row => {
+            wsData.push([
+              row.jenis, row.noHewan, row.state, row.fotoHewan,
+              row.idMudhohi, row.namaMudhohi, row.alamat, row.noHP,
+              row.isDelivered, row.isPostponed, row.bukti, row.usernamePengirim
+            ]);
+          });
+
+          const wb = XLSX.utils.book_new();
+          const ws = XLSX.utils.aoa_to_sheet(wsData);
+          ws['!cols'] = [
+            { wch: 12 }, { wch: 10 }, { wch: 28 }, { wch: 40 },
+            { wch: 28 }, { wch: 20 }, { wch: 30 }, { wch: 15 },
+            { wch: 14 }, { wch: 10 }, { wch: 40 }, { wch: 20 }
+          ];
+
+          // Hyperlink untuk kolom Foto Hewan dan Bukti
+          rows.forEach((row, i) => {
+            const rowNum = i + 2;
+            if (row.fotoHewan && row.fotoHewan.startsWith('http')) {
+              const cellRef = XLSX.utils.encode_cell({ r: rowNum - 1, c: 3 });
+              ws[cellRef] = { v: row.fotoHewan, l: { Target: row.fotoHewan, Tooltip: "Lihat foto hewan" } };
+            }
+            if (row.bukti && row.bukti.startsWith('http')) {
+              const cellRef = XLSX.utils.encode_cell({ r: rowNum - 1, c: 10 });
+              ws[cellRef] = { v: row.bukti, l: { Target: row.bukti, Tooltip: "Lihat bukti pengiriman" } };
+            }
+          });
+
+          XLSX.utils.book_append_sheet(wb, ws, "Snapshot Qurban");
+          const now = new Date();
+          const ts = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+          XLSX.writeFile(wb, `snapshot_qurban_${ts}.xlsx`);
+        } catch (err) {
+          alert("Gagal download Excel: " + err.message);
+        } finally {
+          if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-file-excel me-1"></i> Download Snapshot Excel'; }
+        }
+      }
     </script>
   </body>
 </html>

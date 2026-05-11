@@ -1,31 +1,26 @@
 const SapiModel = require("../models/sapiModel");
+const KambingModel = require("../models/kambingModel");
 const database = require("../firebaseConfig");
 
 
 // ! FUNCTION TO HELP
-async function updateSapiState(sapiId) {
-    const sapiRef = database.ref(`sapi/${sapiId}`);
-    const snapshot = await sapiRef.once('value');
+// Update state sapi atau kambing berdasarkan status mudhohi-nya
+async function updateHewanState(jenis, hewanId) {
+    const ref = jenis === 'kambing' ? `kambing/${hewanId}` : `sapi/${hewanId}`;
+    const hewanRef = database.ref(ref);
+    const snapshot = await hewanRef.once('value');
 
     if (!snapshot.exists()) {
-        console.log('Sapi tidak ditemukan');
         return;
     }
 
-    const sapiData = snapshot.val();
-
+    const hewanData = snapshot.val();
     let allDeliveredOrPostponed = true;
     let anyDeliveredOrPostponed = false;
 
-    // Loop through each child of sapiId
-    for (const key in sapiData) {
-        const mudhohi = sapiData[key];
-
-        // Only consider nodes that have 'isDelivered' or 'isPostponed' attribute
+    for (const key in hewanData) {
+        const mudhohi = hewanData[key];
         if (mudhohi.hasOwnProperty('isDelivered') || mudhohi.hasOwnProperty('isPostponed')) {
-            console.log(`isDelivered for mudhohi ${key}:`, mudhohi.isDelivered);
-            console.log(`isPostponed for mudhohi ${key}:`, mudhohi.isPostponed);
-
             if (mudhohi.isDelivered || mudhohi.isPostponed) {
                 anyDeliveredOrPostponed = true;
             } else {
@@ -33,8 +28,6 @@ async function updateSapiState(sapiId) {
             }
         }
     }
-
-    console.log(`allDeliveredOrPostponed: ${allDeliveredOrPostponed}, anyDeliveredOrPostponed: ${anyDeliveredOrPostponed}`);
 
     let newState;
     if (allDeliveredOrPostponed) {
@@ -45,154 +38,152 @@ async function updateSapiState(sapiId) {
         newState = "Siap Dibagikan";
     }
 
-    console.log(`Updating state to: ${newState}`);
-
-    await sapiRef.child('state').set(newState);
-    console.log(`State sapi dengan ID ${sapiId} diperbarui menjadi: ${newState}`);
+    await hewanRef.child('state').set(newState);
 }
 
-
-async function isSapiSiapDibagikan(sapiId) {
-    const sapiRef = database.ref(`sapi/${sapiId}/state`);
-    const snapshot = await sapiRef.once('value');
-
-    if (!snapshot.exists()) {
-        console.log('State tidak ditemukan');
-        return false; // Atau mungkin return null/undefined sesuai kebutuhanmu
-    }
-
+async function isHewanSiapDibagikan(jenis, hewanId) {
+    const ref = jenis === 'kambing' ? `kambing/${hewanId}/state` : `sapi/${hewanId}/state`;
+    const snapshot = await database.ref(ref).once('value');
+    if (!snapshot.exists()) return false;
     const state = snapshot.val();
-
     return state === "Siap Dibagikan" || state === "Sedang Dibagikan ke Mudhohi" || state === "Selesai Dibagikan ke Mudhohi";
 }
 
-async function isSapiExist(sapiId) {
-    const snapshot = await database.ref('sapi').child(sapiId).once('value');
+async function isHewanExist(jenis, hewanId) {
+    const ref = jenis === 'kambing' ? 'kambing' : 'sapi';
+    const snapshot = await database.ref(ref).child(hewanId).once('value');
     return snapshot.exists();
 }
-
-
 
 
 // ! REALISASI
 module.exports.getPanitLt3Dashboard = async (req, res) => {
     const currentUser = res.locals.user;
-    // console.log({ role: "panitLt3", currentUser });
     const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
-    res.render("panitLt3Dashboard", { currentUser, firebaseConfig: {apiKey: firebaseConfig.apiKey, authDomain: firebaseConfig.authDomain, projectId: firebaseConfig.projectId, storageBucket: firebaseConfig.storageBucket, messagingSenderId: firebaseConfig.messagingSenderId, appId: firebaseConfig.appId, measurementId: firebaseConfig.measurementId, databaseURL: process.env.DATABASE_URL } })
+    res.render("panitLt3Dashboard", { currentUser, firebaseConfig: { apiKey: firebaseConfig.apiKey, authDomain: firebaseConfig.authDomain, projectId: firebaseConfig.projectId, storageBucket: firebaseConfig.storageBucket, messagingSenderId: firebaseConfig.messagingSenderId, appId: firebaseConfig.appId, measurementId: firebaseConfig.measurementId, databaseURL: process.env.DATABASE_URL } });
 }
-
 
 module.exports.changeStatusDashboard = async (req, res) => {
     const currentUser = res.locals.user;
-    // console.log({ role: "panitLt3", currentUser });
     const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
-    res.render("changeStatusLt3", { currentUser, firebaseConfig: {apiKey: firebaseConfig.apiKey, authDomain: firebaseConfig.authDomain, projectId: firebaseConfig.projectId, storageBucket: firebaseConfig.storageBucket, messagingSenderId: firebaseConfig.messagingSenderId, appId: firebaseConfig.appId, measurementId: firebaseConfig.measurementId, databaseURL: process.env.DATABASE_URL } })
+    res.render("changeStatusLt3", { currentUser, firebaseConfig: { apiKey: firebaseConfig.apiKey, authDomain: firebaseConfig.authDomain, projectId: firebaseConfig.projectId, storageBucket: firebaseConfig.storageBucket, messagingSenderId: firebaseConfig.messagingSenderId, appId: firebaseConfig.appId, measurementId: firebaseConfig.measurementId, databaseURL: process.env.DATABASE_URL } });
 }
 
 module.exports.revertDeliverLt3 = async (req, res) => {
     const currentUser = res.locals.user;
-    // console.log({ role: "panitLt3", currentUser });
     const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
-    res.render("revertDeliverLt3", { currentUser, firebaseConfig: {apiKey: firebaseConfig.apiKey, authDomain: firebaseConfig.authDomain, projectId: firebaseConfig.projectId, storageBucket: firebaseConfig.storageBucket, messagingSenderId: firebaseConfig.messagingSenderId, appId: firebaseConfig.appId, measurementId: firebaseConfig.measurementId, databaseURL: process.env.DATABASE_URL } })
+    res.render("revertDeliverLt3", { currentUser, firebaseConfig: { apiKey: firebaseConfig.apiKey, authDomain: firebaseConfig.authDomain, projectId: firebaseConfig.projectId, storageBucket: firebaseConfig.storageBucket, messagingSenderId: firebaseConfig.messagingSenderId, appId: firebaseConfig.appId, measurementId: firebaseConfig.measurementId, databaseURL: process.env.DATABASE_URL } });
 }
 
 module.exports.revertPostponeLt3 = async (req, res) => {
     const currentUser = res.locals.user;
-    // console.log({ role: "panitLt3", currentUser });
     const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
-    res.render("revertPostponeLt3", { currentUser, firebaseConfig: {apiKey: firebaseConfig.apiKey, authDomain: firebaseConfig.authDomain, projectId: firebaseConfig.projectId, storageBucket: firebaseConfig.storageBucket, messagingSenderId: firebaseConfig.messagingSenderId, appId: firebaseConfig.appId, measurementId: firebaseConfig.measurementId, databaseURL: process.env.DATABASE_URL } })
+    res.render("revertPostponeLt3", { currentUser, firebaseConfig: { apiKey: firebaseConfig.apiKey, authDomain: firebaseConfig.authDomain, projectId: firebaseConfig.projectId, storageBucket: firebaseConfig.storageBucket, messagingSenderId: firebaseConfig.messagingSenderId, appId: firebaseConfig.appId, measurementId: firebaseConfig.measurementId, databaseURL: process.env.DATABASE_URL } });
 }
 
+// Deliver: set isDelivered=true untuk mudhohi pada sapi/kambing
+// req.body.jenis: 'kambing' atau 'sapi' (default sapi)
 module.exports.deliver = async (req, res) => {
     try {
-        // TODO ambil parameter (idSapi, idMudhohi)
-        const { idSapi, idMudhohi, bukti } = req.body;
-        // TODO cek apakah sapi dengan id tertentu ada
-        const exist = await isSapiExist(idSapi);
+        const { idSapi, idMudhohi, bukti, jenis } = req.body;
+        const tipeHewan = jenis === 'kambing' ? 'kambing' : 'sapi';
+
+        const exist = await isHewanExist(tipeHewan, idSapi);
         if (!exist) {
-            return res.status(400).json({ message: "sapi does not exist" });
+            return res.status(400).json({ message: `${tipeHewan} does not exist` });
         }
-        // TODO cek apakah sapi siap dibagikan
-        const siapDibagikan = await isSapiSiapDibagikan(idSapi);
+
+        const siapDibagikan = await isHewanSiapDibagikan(tipeHewan, idSapi);
         if (!siapDibagikan) {
-            return res.status(400).json({ message: "Sapi hasn't ready yet to delivered" });
+            return res.status(400).json({ message: "Hewan hasn't ready yet to be delivered" });
         }
-        // TODO ganti nilai isDelivered dan bukti
-        await SapiModel.deliver(idSapi, idMudhohi, true, bukti, false, res.locals.user.username);
-        // TODO update nilai state sapi
-        await updateSapiState(idSapi);
+
+        if (tipeHewan === 'kambing') {
+            await KambingModel.deliver(idSapi, idMudhohi, true, bukti, false, res.locals.user.username);
+        } else {
+            await SapiModel.deliver(idSapi, idMudhohi, true, bukti, false, res.locals.user.username);
+        }
+
+        await updateHewanState(tipeHewan, idSapi);
         res.status(200).json({ message: "data updated successfully" });
-    }
-    catch (err) {
+    } catch (err) {
         res.status(400).json({ message: err.message });
     }
 }
 
+// Revert Deliver
 module.exports.revert = async (req, res) => {
     try {
+        const { idSapi, idMudhohi, jenis } = req.body;
+        const tipeHewan = jenis === 'kambing' ? 'kambing' : 'sapi';
 
-        // TODO ambil parameter (idSapi, idMudhohi)
-        const { idSapi, idMudhohi } = req.body;
-        // TODO dapatkan gambar dan ubah menjadi string (nanti)
-        // TODO ganti nilai isDelivered dan bukti
-        await SapiModel.revertDeliver(idSapi, idMudhohi, false, "", false);
-        // TODO update nilai state sapi
-        await updateSapiState(idSapi);
+        if (tipeHewan === 'kambing') {
+            await KambingModel.revertDeliver(idSapi, idMudhohi, false, '', false);
+        } else {
+            await SapiModel.revertDeliver(idSapi, idMudhohi, false, '', false);
+        }
+
+        await updateHewanState(tipeHewan, idSapi);
         res.status(200).json({ message: "data updated successfully" });
-    }
-    catch (err) {
+    } catch (err) {
         res.status(400).json({ message: err.message });
     }
 }
 
+// Postpone: set isPostponed=true untuk mudhohi pada sapi/kambing
 module.exports.postpone = async (req, res) => {
     try {
-        // TODO ambil parameter (idSapi, idMudhohi)
-        const { idSapi, idMudhohi } = req.body;
-        // TODO cek apakah sapi dengan id tertentu ada
-        const exist = await isSapiExist(idSapi);
+        const { idSapi, idMudhohi, jenis } = req.body;
+        const tipeHewan = jenis === 'kambing' ? 'kambing' : 'sapi';
+
+        const exist = await isHewanExist(tipeHewan, idSapi);
         if (!exist) {
-            return res.status(400).json({ message: "sapi does not exist" });
+            return res.status(400).json({ message: `${tipeHewan} does not exist` });
         }
-        // TODO cek apakah sapi siap dibagikan
-        const siapDibagikan = await isSapiSiapDibagikan(idSapi);
+
+        const siapDibagikan = await isHewanSiapDibagikan(tipeHewan, idSapi);
         if (!siapDibagikan) {
-            return res.status(400).json({ message: "Sapi hasn't ready yet to delivered" });
+            return res.status(400).json({ message: "Hewan hasn't ready yet to be delivered" });
         }
-        // TODO postpone
-        await SapiModel.postpone(idSapi, idMudhohi, false, true, res.locals.user.username);
-        // TODO update nilai state sapi
-        await updateSapiState(idSapi);
+
+        if (tipeHewan === 'kambing') {
+            await KambingModel.postpone(idSapi, idMudhohi, false, true, res.locals.user.username);
+        } else {
+            await SapiModel.postpone(idSapi, idMudhohi, false, true, res.locals.user.username);
+        }
+
+        await updateHewanState(tipeHewan, idSapi);
         res.status(200).json({ message: "data updated successfully" });
-    }
-    catch (err) {
+    } catch (err) {
         res.status(400).json({ message: err.message });
     }
 }
 
+// Revert Postpone
 module.exports.revertPostpone = async (req, res) => {
     try {
-        // TODO ambil parameter (idSapi, idMudhohi)
-        const { idSapi, idMudhohi } = req.body;
-        // TODO cek apakah sapi dengan id tertentu ada
-        const exist = await isSapiExist(idSapi);
+        const { idSapi, idMudhohi, jenis } = req.body;
+        const tipeHewan = jenis === 'kambing' ? 'kambing' : 'sapi';
+
+        const exist = await isHewanExist(tipeHewan, idSapi);
         if (!exist) {
-            return res.status(400).json({ message: "sapi does not exist" });
+            return res.status(400).json({ message: `${tipeHewan} does not exist` });
         }
-        // TODO cek apakah sapi siap dibagikan
-        const siapDibagikan = await isSapiSiapDibagikan(idSapi);
+
+        const siapDibagikan = await isHewanSiapDibagikan(tipeHewan, idSapi);
         if (!siapDibagikan) {
-            return res.status(400).json({ message: "Sapi hasn't ready yet to delivered" });
+            return res.status(400).json({ message: "Hewan hasn't ready yet to be delivered" });
         }
-        // TODO revert postpone
-        await SapiModel.revertPostpone(idSapi, idMudhohi, false, "", false);
-        // TODO update nilai state sapi
-        await updateSapiState(idSapi);
+
+        if (tipeHewan === 'kambing') {
+            await KambingModel.revertPostpone(idSapi, idMudhohi, false, '', false);
+        } else {
+            await SapiModel.revertPostpone(idSapi, idMudhohi, false, '', false);
+        }
+
+        await updateHewanState(tipeHewan, idSapi);
         res.status(200).json({ message: "data updated successfully" });
-    }
-    catch (err) {
+    } catch (err) {
         res.status(400).json({ message: err.message });
     }
-
 }
