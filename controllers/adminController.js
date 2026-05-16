@@ -78,7 +78,7 @@ module.exports.getAdminMain = async (req, res) => {
     const resultSapi = sapi ? await transformData(sapi) : [];
     const resultKambing = kambing ? await transformKambingData(kambing) : [];
     const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
-    res.render("adminDashboard", {
+    res.render("AdminDashboard", {
         sapi: resultSapi,
         kambing: resultKambing,
         currentUser,
