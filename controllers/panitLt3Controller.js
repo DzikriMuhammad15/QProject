@@ -17,16 +17,25 @@ async function updateHewanState(jenis, hewanId) {
     const hewanData = snapshot.val();
     let allDeliveredOrPostponed = true;
     let anyDeliveredOrPostponed = false;
+    let hasMudhohi = false;
 
     for (const key in hewanData) {
-        const mudhohi = hewanData[key];
-        if (mudhohi.hasOwnProperty('isDelivered') || mudhohi.hasOwnProperty('isPostponed')) {
-            if (mudhohi.isDelivered || mudhohi.isPostponed) {
-                anyDeliveredOrPostponed = true;
-            } else {
-                allDeliveredOrPostponed = false;
-            }
+        // Lewati key bukan-mudhohi (foto, state, dsb yang bukan object)
+        if (key === 'foto' || key === 'state' || typeof hewanData[key] !== 'object' || hewanData[key] === null) {
+            continue;
         }
+        const mudhohi = hewanData[key];
+        hasMudhohi = true;
+        if (mudhohi.isDelivered || mudhohi.isPostponed) {
+            anyDeliveredOrPostponed = true;
+        } else {
+            allDeliveredOrPostponed = false;
+        }
+    }
+
+    // Jika tidak ada mudhohi sama sekali, reset allDeliveredOrPostponed
+    if (!hasMudhohi) {
+        allDeliveredOrPostponed = false;
     }
 
     let newState;

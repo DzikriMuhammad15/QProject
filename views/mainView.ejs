@@ -154,382 +154,209 @@
       crossorigin="anonymous"
     ></script>
     <script src="scripts/adminScript.js"></script>
-    <script type="module">
-            import anime from "https://cdn.jsdelivr.net/npm/animejs@3.2.1/+esm";
-            var firebaseConfig = <%- JSON.stringify(firebaseConfig) %>;
-            console.log(firebaseConfig);
-            // Inisialisasi Firebase
-            firebase.initializeApp(firebaseConfig);
-            const database = firebase.database();
+<script type="module">
+      import anime from "https://cdn.jsdelivr.net/npm/animejs@3.2.1/+esm";
+      var firebaseConfig = <%- JSON.stringify(firebaseConfig) %>;
+      firebase.initializeApp(firebaseConfig);
+      const database = firebase.database();
 
-            // Referensi ke path data sapi
-            const sapiRef = database.ref("sapi/");
-
-            function animateCountUpdate(element, newValue) {
+      function animateCountUpdate(element, newValue) {
         const currentValue = element.innerText;
-
-        // Buat container untuk animasi
         const container = document.createElement("div");
         container.style.position = "relative";
         container.style.display = "inline-block";
-        container.style.height = element.offsetHeight + "px"; // Tetapkan tinggi container agar tetap konsisten
-        container.style.width = element.offsetWidth + "px";  // Tetapkan lebar container agar tetap konsisten
-
-        // Elemen nilai lama
+        container.style.height = element.offsetHeight + "px";
+        container.style.width = element.offsetWidth + "px";
         const oldValueElement = document.createElement("div");
         oldValueElement.innerText = currentValue;
-        oldValueElement.style.position = "absolute";
-        oldValueElement.style.top = "0";
-        oldValueElement.style.left = "0";
-        oldValueElement.style.width = "100%";
-        oldValueElement.style.height = "100%";
-        oldValueElement.style.fontSize = window.getComputedStyle(element).fontSize;
-        oldValueElement.style.fontWeight = window.getComputedStyle(element).fontWeight;
-        oldValueElement.style.lineHeight = window.getComputedStyle(element).lineHeight;
-        oldValueElement.style.textAlign = window.getComputedStyle(element).textAlign;
+        oldValueElement.style.cssText = `position:absolute;top:0;left:0;width:100%;height:100%;font-size:${window.getComputedStyle(element).fontSize};font-weight:${window.getComputedStyle(element).fontWeight};line-height:${window.getComputedStyle(element).lineHeight};text-align:${window.getComputedStyle(element).textAlign};`;
         container.appendChild(oldValueElement);
-
-        // Elemen nilai baru
         const newValueElement = document.createElement("div");
         newValueElement.innerText = newValue;
-        newValueElement.style.position = "absolute";
-        newValueElement.style.top = "0";
-        newValueElement.style.left = "0";
-        newValueElement.style.width = "100%";
-        newValueElement.style.height = "100%";
-        newValueElement.style.fontSize = window.getComputedStyle(element).fontSize;
-        newValueElement.style.fontWeight = window.getComputedStyle(element).fontWeight;
-        newValueElement.style.lineHeight = window.getComputedStyle(element).lineHeight;
-        newValueElement.style.textAlign = window.getComputedStyle(element).textAlign;
-        newValueElement.style.opacity = "0";
+        newValueElement.style.cssText = oldValueElement.style.cssText + "opacity:0;";
         container.appendChild(newValueElement);
-
-        // Ganti elemen asli dengan container yang di-animasi
         element.innerHTML = "";
         element.appendChild(container);
-
-        anime({
-          targets: oldValueElement,
-          translateY: -50,
-          duration: 500,
-          easing: "easeInOutQuad",
-          complete: () => {
-            oldValueElement.remove();
-          },
-        });
-
-        anime({
-          targets: newValueElement,
-          opacity: [0, 1],
-          translateY: [50, 0],
-          duration: 500,
-          easing: "easeInOutQuad",
-          complete: () => {
-            // Setelah animasi selesai, reset posisi elemen agar sesuai
-            newValueElement.style.position = "static";
-            container.style.height = "auto"; // Hapus tinggi tetap dari container setelah animasi
-            container.style.width = "auto"; // Hapus lebar tetap dari container setelah animasi
-          },
+        anime({ targets: oldValueElement, translateY: -50, duration: 500, easing: "easeInOutQuad", complete: () => oldValueElement.remove() });
+        anime({ targets: newValueElement, opacity: [0, 1], translateY: [50, 0], duration: 500, easing: "easeInOutQuad",
+          complete: () => { newValueElement.style.position = "static"; container.style.height = "auto"; container.style.width = "auto"; }
         });
       }
 
-            // Fungsi untuk memperbarui konten halaman
-            function updateDataOnPage(sapi) {
-              const exploreSection = document.getElementById("explore");
-              exploreSection.innerHTML = ""; // Kosongkan kontainer
-              const body = document.querySelector("body");
+      // ── Render semua hewan (sapi + kambing) ke explore section ──
+      function updateDataOnPage(hewanArray) {
+        const exploreSection = document.getElementById("explore");
+        exploreSection.innerHTML = "";
+        const body = document.querySelector("body");
+        document.querySelectorAll('[id^="modalHewan-"]').forEach(el => el.remove());
 
-              for (let index = 0; index < Math.floor(sapi.length / 3) + 1; index++) {
-                const projectContainer = document.createElement("div");
-                projectContainer.className = "project-container";
+        for (let index = 0; index < Math.ceil(hewanArray.length / 3); index++) {
+          const projectContainer = document.createElement("div");
+          projectContainer.className = "project-container";
+          for (let i = index * 3; i < Math.min(index * 3 + 3, hewanArray.length); i++) {
+            const hewan = hewanArray[i];
+            const modalId = `modalHewan-${hewan.jenis}-${hewan.idHewan}`;
+            const projectBox = document.createElement("div");
+            projectBox.className = "project-box";
+            projectBox.setAttribute("data-bs-toggle", "modal");
+            projectBox.setAttribute("data-bs-target", `#${modalId}`);
+            const iconClass = hewan.jenis === 'kambing' ? 'fa-solid fa-hippo' : 'fa-solid fa-cow';
+            const iconColor = hewan.jenis === 'kambing' ? '#82C57A' : '#74C0FC';
+            projectBox.innerHTML = `
+              <i class="${iconClass}" style="color:${iconColor};"></i>
+              <h3>${hewan.jenis === 'kambing' ? 'Kambing' : 'Sapi'} ${hewan.idHewan}</h3>
+              <label>${hewan.state}</label>
+            `;
+            projectContainer.appendChild(projectBox);
 
-                for (let i = index * 3; i < index * 3 + 3; i++) {
-                  if (i < sapi.length) {
-                    const projectBox = document.createElement("div");
-                    projectBox.className = "project-box";
-                    projectBox.setAttribute("data-bs-toggle", "modal");
-                    projectBox.setAttribute(
-                      "data-bs-target",
-                      `#modalSapi${sapi[i].idSapi}`
-                    );
-
-                    projectBox.innerHTML = `
-                      <i class="fa-solid fa-cow" style="color: #74C0FC;"></i>
-                      <h3>Sapi ${sapi[i].idSapi}</h3>
-                      <label>${sapi[i].state}</label>
-                    `;
-                    projectContainer.appendChild(projectBox);
-                    // buat modal
-                    const modal = document.createElement("div");
-                    modal.className = "modal fade";
-                    modal.setAttribute("id", `modalSapi${sapi[i].idSapi}`);
-                    modal.setAttribute("tabindex", "-1");
-                    modal.setAttribute("aria-labelledby", "exampleModalLabel");
-                    modal.setAttribute("aria-hidden", "true");
-                    var temp = `<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h1 class="modal-title fs-5" id="exampleModalLabel">Sapi ${sapi[i].idSapi}</h1>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            const modal = document.createElement("div");
+            modal.className = "modal fade";
+            modal.setAttribute("id", modalId);
+            modal.setAttribute("tabindex", "-1");
+            let mudhohiHtml = '';
+            hewan.mudhohi.forEach(m => {
+              mudhohiHtml += `<hr><h2 class="fs-5">${m.name || '-'}</h2><p>${m.alamat || '-'}</p>`;
+            });
+            modal.innerHTML = `
+              <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h1 class="modal-title fs-5">${hewan.jenis === 'kambing' ? 'Kambing' : 'Sapi'} ${hewan.idHewan}</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                  </div>
+                  <div class="modal-body">${mudhohiHtml}</div>
                 </div>
-                  <div class="modal-body">
-                  `;
-                    var mudhohis = sapi[i].mudhohi;
-                    mudhohis.forEach((mudhohi) => {
-                      temp += `<hr>
-                    <h2 class="fs-5">${mudhohi.name}</h2>
-                    <p>${mudhohi.alamat}</p>`;
-                    });
-                    temp += `</div>
-              </div>
-            </div>`;
+              </div>`;
+            body.appendChild(modal);
+          }
+          exploreSection.appendChild(projectContainer);
+        }
+      }
 
-                    modal.innerHTML = temp;
-                    body.appendChild(modal);
-                  }
-                }
-                exploreSection.appendChild(projectContainer);
+      async function transformHewan(sapiData, kambingData) {
+        const result = [];
+        if (sapiData) {
+          for (const id in sapiData) {
+            const h = sapiData[id];
+            const obj = { idHewan: id, jenis: 'sapi', state: h.state, mudhohi: [] };
+            for (const key in h) {
+              if (key !== 'foto' && key !== 'state' && typeof h[key] === 'object') {
+                const mudhohiObj = await database.ref("mudhohis/" + key).once("value").then(s => s.val());
+                const userObj = await database.ref("users/").orderByChild("mudhohiId").equalTo(key).once("value").then(s => {
+                  const d = s.val(); if (d) { const k = Object.keys(d)[0]; return d[k].name; } return null;
+                });
+                obj.mudhohi.push({ idMudhohi: key, ...mudhohiObj, name: userObj });
               }
             }
-
-            async function transformData(data) {
-              const result = [];
-
-              // Loop melalui setiap key di object data
-              for (const idSapi in data) {
-                const sapi = data[idSapi];
-                const sapiObj = {
-                  idSapi: idSapi,
-                  foto: sapi.foto,
-                  state: sapi.state,
-                  mudhohi: [],
-                };
-
-                // Loop melalui setiap key di dalam object sapi
-                for (const key in sapi) {
-                  if (
-                    key !== "foto" &&
-                    key !== "state" &&
-                    typeof sapi[key] === "object"
-                  ) {
-                    // Fetch mudhohi data from "mudhohis/"
-                    const mudhohiObj = await database
-                      .ref("mudhohis/" + key)
-                      .once("value")
-                      .then((snapshot) => snapshot.val());
-
-                    // Fetch name from "users/" based on mudhohiId
-                    const userObj = await database
-                      .ref("users/")
-                      .orderByChild("mudhohiId")
-                      .equalTo(key)
-                      .once("value")
-                      .then((snapshot) => {
-                        const userData = snapshot.val();
-                        if (userData) {
-                          // Since the result is an object, retrieve the first user's name
-                          const firstUserKey = Object.keys(userData)[0];
-                          return userData[firstUserKey].name;
-                        }
-                        return null;
-                      });
-
-                    // Add mudhohi object with the name to sapiObj
-                    sapiObj.mudhohi.push({
-                      idMudhohi: key,
-                      ...mudhohiObj,
-                      name: userObj,
-                    });
-                  }
-                }
-
-                result.push(sapiObj);
+            result.push(obj);
+          }
+        }
+        if (kambingData) {
+          for (const id in kambingData) {
+            const h = kambingData[id];
+            const obj = { idHewan: id, jenis: 'kambing', state: h.state, mudhohi: [] };
+            for (const key in h) {
+              if (key !== 'foto' && key !== 'state' && typeof h[key] === 'object') {
+                const mudhohiObj = await database.ref("mudhohis/" + key).once("value").then(s => s.val());
+                const userObj = await database.ref("users/").orderByChild("mudhohiId").equalTo(key).once("value").then(s => {
+                  const d = s.val(); if (d) { const k = Object.keys(d)[0]; return d[k].name; } return null;
+                });
+                obj.mudhohi.push({ idMudhohi: key, ...mudhohiObj, name: userObj });
               }
-
-              return result;
             }
+            result.push(obj);
+          }
+        }
+        return result;
+      }
 
-            function areArraysEqual(arrayA, arrayB) {
-              // Jika panjang array tidak sama, array pasti tidak sama
-              if (arrayA.length !== arrayB.length) {
-                  return false;
-              }
+      function areArraysEqual(a, b) {
+        if (a.length !== b.length) return false;
+        const sa = a.slice().sort(), sb = b.slice().sort();
+        return sa.every((v, i) => v === sb[i]);
+      }
 
-              // Sortir kedua array
-              const sortedA = arrayA.slice().sort();
-              const sortedB = arrayB.slice().sort();
+      // ── State tracker: sapi ──
+      let idBelumDisembelihGlobal = [], idProsesPenyembelihanGlobal = [], idPemrosesanDagingGlobal = [];
+      let idSiapDibagikanGlobal = [], idSedangDibagikanKeMudhohiGlobal = [], idSelesaiDibagikanGlobal = [];
+      // ── State tracker: kambing ──
+      let idKambingBelumDisembelihGlobal = [], idKambingProsesPenyembelihanGlobal = [], idKambingPemrosesanDagingGlobal = [];
+      let idKambingSiapDibagikanGlobal = [], idKambingSedangDibagikanKeMudhohiGlobal = [], idKambingSelesaiDibagikanGlobal = [];
 
-              // Bandingkan elemen per elemen
-              for (let i = 0; i < sortedA.length; i++) {
-                  if (sortedA[i] !== sortedB[i]) {
-                      return false;
-                  }
-              }
+      let latestSapiData = null;
+      let latestKambingData = null;
 
-              return true;
-            }
+      function updateCounters(sapiArray, kambingArray) {
+        // ── Sapi ──
+        const grpSapi = { 'Belum Disembelih': [], 'Proses Penyembelihan': [], 'Pemrosesan Daging': [], 'Siap Dibagikan': [], 'Sedang Dibagikan ke Mudhohi': [], 'Selesai Dibagikan ke Mudhohi': [] };
+        sapiArray.forEach(el => {
+          if (el.state === 'Belum Disembelih') grpSapi['Belum Disembelih'].push(el.idHewan);
+          else if (el.state === 'Proses Penyembelihan') grpSapi['Proses Penyembelihan'].push(el.idHewan);
+          else if (el.state === 'Pemrosesan Daging') grpSapi['Pemrosesan Daging'].push(el.idHewan);
+          else if (el.state === 'Siap Dibagikan') grpSapi['Siap Dibagikan'].push(el.idHewan);
+          else if (el.state === 'Sedang Dibagikan ke Mudhohi') grpSapi['Sedang Dibagikan ke Mudhohi'].push(el.idHewan);
+          else if (el.state === 'Selesai Dibagikan ke Mudhohi') grpSapi['Selesai Dibagikan ke Mudhohi'].push(el.idHewan);
+        });
+        // ── Kambing ──
+        const grpKambing = { 'Belum Disembelih': [], 'Proses Penyembelihan': [], 'Pemrosesan Daging': [], 'Siap Dibagikan': [], 'Sedang Dibagikan ke Mudhohi': [], 'Selesai Dibagikan ke Mudhohi': [] };
+        kambingArray.forEach(el => {
+          if (el.state === 'Belum Disembelih') grpKambing['Belum Disembelih'].push(el.idHewan);
+          else if (el.state === 'Proses Penyembelihan') grpKambing['Proses Penyembelihan'].push(el.idHewan);
+          else if (el.state === 'Pemrosesan Daging') grpKambing['Pemrosesan Daging'].push(el.idHewan);
+          else if (el.state === 'Siap Dibagikan') grpKambing['Siap Dibagikan'].push(el.idHewan);
+          else if (el.state === 'Sedang Dibagikan ke Mudhohi') grpKambing['Sedang Dibagikan ke Mudhohi'].push(el.idHewan);
+          else if (el.state === 'Selesai Dibagikan ke Mudhohi') grpKambing['Selesai Dibagikan ke Mudhohi'].push(el.idHewan);
+        });
 
-            let idBelumDisembelihGlobal = [];
-            let idProsesPenyembelihanGlobal = [];
-            let idPemrosesanDagingGlobal = [];
-            let idSiapDibagikanGlobal = [];
-            let idSedangDibagikanKeMudhohiGlobal = [];
-            let idSelesaiDibagikanGlobal = [];
+        // Helper: gabungkan label S=sapi K=kambing
+        function mergeLabel(arrS, arrK) {
+          const parts = [];
+          if (arrS.length) parts.push('Sapi: ' + arrS.join(', '));
+          if (arrK.length) parts.push('Kambing: ' + arrK.join(', '));
+          return parts.length ? parts.join(' | ') : '-';
+        }
 
-            // Listen untuk perubahan data
-            sapiRef.on("value", async (snapshot) => {
-              console.log("TRIGGERED");
-              console.log("RAW DATA:", snapshot.val());
-              const data = snapshot.val();
-              console.log(data);
-              if (data) {
-                const sapiArray = await transformData(data);
-                console.log(sapiArray);
-                let idBelumDisembelih = [];
-                let idProsesPenyembelihan = [];
-                let idPemrosesanDaging = [];
-                let idSiapDibagikan = [];
-                let idSedangDibagikanKeMudhohi = [];
-                let idSelesaiDibagikan = [];
-                sapiArray.forEach((el) => {
-                  if(el.state === "Belum Disembelih"){
-                    idBelumDisembelih.push(el.idSapi);
-                  }
-                  else if(el.state === "Proses Penyembelihan"){
-                    idProsesPenyembelihan.push(el.idSapi);
-                  }
-                  else if(el.state === "Pemrosesan Daging"){
-                    idPemrosesanDaging.push(el.idSapi);
-                  }
-                  else if(el.state === "Siap Dibagikan"){
-                    idSiapDibagikan.push(el.idSapi);
-                  }
-                  else{
-                    // selesai dibagikan
-                    idSelesaiDibagikan.push(el.idSapi);
-                  }
-                })
-                let idBelumDisembelihString = idBelumDisembelih.join(", ");
-                let idProsesPenyembelihanString = idProsesPenyembelihan.join(", ");
-                let idPemrosesanDagingString = idPemrosesanDaging.join(", ");
-                let idSiapDibagikanString = idSiapDibagikan.join(", ");
-                let idSedangDibagikanKeMudhohiString = idSedangDibagikanKeMudhohi.join(", ");
-                let idSelesaiDibagikanString = idSelesaiDibagikan.join(", ");
+        const pairs = [
+          { el: 'belumDiselbelihLive',            sArr: grpSapi['Belum Disembelih'],          kArr: grpKambing['Belum Disembelih'],          sGlob: idBelumDisembelihGlobal,          kGlob: idKambingBelumDisembelihGlobal },
+          { el: 'prosesPenyembelihanLive',         sArr: grpSapi['Proses Penyembelihan'],       kArr: grpKambing['Proses Penyembelihan'],       sGlob: idProsesPenyembelihanGlobal,      kGlob: idKambingProsesPenyembelihanGlobal },
+          { el: 'pemrosesanDagingLive',            sArr: grpSapi['Pemrosesan Daging'],          kArr: grpKambing['Pemrosesan Daging'],          sGlob: idPemrosesanDagingGlobal,         kGlob: idKambingPemrosesanDagingGlobal },
+          { el: 'siapDibagikanLive',               sArr: grpSapi['Siap Dibagikan'],             kArr: grpKambing['Siap Dibagikan'],             sGlob: idSiapDibagikanGlobal,            kGlob: idKambingSiapDibagikanGlobal },
+          { el: 'sedangDibagikanKeMudhohiLive',    sArr: grpSapi['Sedang Dibagikan ke Mudhohi'],    kArr: grpKambing['Sedang Dibagikan ke Mudhohi'],    sGlob: idSedangDibagikanKeMudhohiGlobal, kGlob: idKambingSedangDibagikanKeMudhohiGlobal },
+          { el: 'selesaiDibagikanLive',            sArr: grpSapi['Selesai Dibagikan ke Mudhohi'],   kArr: grpKambing['Selesai Dibagikan ke Mudhohi'],   sGlob: idSelesaiDibagikanGlobal,         kGlob: idKambingSelesaiDibagikanGlobal },
+        ];
 
-                if(!areArraysEqual(idBelumDisembelih, idBelumDisembelihGlobal)){
-                  if(idBelumDisembelih.length != 0){
-                    animateCountUpdate(
-                      document.getElementById("belumDiselbelihLive"),
-                      idBelumDisembelihString
-                    );
-                  }
-                else{
+        pairs.forEach(p => {
+          const changed = !areArraysEqual(p.sArr, p.sGlob) || !areArraysEqual(p.kArr, p.kGlob);
+          if (changed) {
+            animateCountUpdate(document.getElementById(p.el), mergeLabel(p.sArr, p.kArr));
+            p.sGlob.splice(0, p.sGlob.length, ...p.sArr);
+            p.kGlob.splice(0, p.kGlob.length, ...p.kArr);
+          }
+        });
+      }
 
-                animateCountUpdate(
-                      document.getElementById("belumDiselbelihLive"),
-                      "-"
-                    );
-                  }
-                idBelumDisembelihGlobal.splice(0, idBelumDisembelihGlobal.length, ...idBelumDisembelih);
-                }
+      async function refreshView() {
+        const sapiArr = latestSapiData ? (await transformHewan(latestSapiData, null)).filter(h => h.jenis === 'sapi') : [];
+        const kambingArr = latestKambingData ? (await transformHewan(null, latestKambingData)).filter(h => h.jenis === 'kambing') : [];
+        updateCounters(sapiArr, kambingArr);
+        const hewanArray = await transformHewan(latestSapiData, latestKambingData);
+        updateDataOnPage(hewanArray);
+      }
 
-                if(!areArraysEqual(idProsesPenyembelihan, idProsesPenyembelihanGlobal)){
-                  if(idProsesPenyembelihan.length != 0){
-                    animateCountUpdate(
-                      document.getElementById("prosesPenyembelihanLive"),
-                      idProsesPenyembelihanString
-                    );
-                  }
-                  else{
-                    animateCountUpdate(
-                      document.getElementById("prosesPenyembelihanLive"),
-                      "-"
-                    );
-                  }
-                  idProsesPenyembelihanGlobal.splice(0, idProsesPenyembelihanGlobal.length, ...idProsesPenyembelihan);
-                }
+      database.ref("sapi/").on("value", async snapshot => {
+        latestSapiData = snapshot.val();
+        refreshView();
+      });
+      database.ref("kambing/").on("value", async snapshot => {
+        latestKambingData = snapshot.val();
+        refreshView();
+      });
 
-                if(!areArraysEqual(idPemrosesanDaging, idPemrosesanDagingGlobal)){
-                  if(idPemrosesanDaging.length != 0){
-                    animateCountUpdate(
-                      document.getElementById("pemrosesanDagingLive"),
-                      idPemrosesanDagingString
-                    );
-                  }else{
-                    animateCountUpdate(
-                      document.getElementById("pemrosesanDagingLive"),
-                      "-"
-                    );
-                  }
-                  idPemrosesanDagingGlobal.splice(0, idPemrosesanDagingGlobal.length, ...idPemrosesanDaging);
-                }
-
-                if(!areArraysEqual(idSiapDibagikan, idSiapDibagikanGlobal)){
-                  if(idSiapDibagikan.length != 0){
-                    animateCountUpdate(
-                      document.getElementById("siapDibagikanLive"),
-                      idSiapDibagikanString
-                    );
-                  }
-                  else{
-
-                    animateCountUpdate(
-                      document.getElementById("siapDibagikanLive"),
-                      "-"
-                    );
-                  }
-                  idSiapDibagikanGlobal.splice(0, idSiapDibagikanGlobal.length, ...idSiapDibagikan);
-                }
-
-
-                if(!areArraysEqual(idSedangDibagikanKeMudhohi, idSedangDibagikanKeMudhohiGlobal)){
-                  if(idSedangDibagikanKeMudhohi.length != 0){
-                    animateCountUpdate(
-                      document.getElementById("sedangDibagikanKeMudhohiLive"),
-                      idSedangDibagikanKeMudhohiString
-                    );
-                  }
-                  else{
-                    animateCountUpdate(
-                      document.getElementById("sedangDibagikanKeMudhohiLive"),
-                      "-"
-                    );
-                  }
-                  idSedangDibagikanKeMudhohiGlobal.splice(0, idSedangDibagikanKeMudhohiGlobal.length, ...idSedangDibagikanKeMudhohi);
-                }
-
-
-                if(!areArraysEqual(idSelesaiDibagikan, idSelesaiDibagikanGlobal)){
-                  if(idSelesaiDibagikan.length != 0){
-                    animateCountUpdate(
-                      document.getElementById("selesaiDibagikanLive"),
-                      idSelesaiDibagikanString
-                    );
-                }
-                else{
-                  animateCountUpdate(
-                      document.getElementById("selesaiDibagikanLive"),
-                      "-"
-                    );
-                  }
-                  idSelesaiDibagikanGlobal.splice(0, idSelesaiDibagikanGlobal.length, ...idSelesaiDibagikan);
-                }
-
-
-
-
-
-                updateDataOnPage(sapiArray);
-              }
-            });
-
-            //   loginPageButton handle
-            const loginPageButton = document.getElementById("loginPageButton");
-            loginPageButton.addEventListener("click", async (e) => {
-              e.preventDefault();
-              location.assign("/auth");
-            });
-            console.log(loginPageButton);
+      const loginPageButton = document.getElementById("loginPageButton");
+      loginPageButton.addEventListener("click", async e => {
+        e.preventDefault();
+        location.assign("/auth");
+      });
     </script>
   </body>
 </html>

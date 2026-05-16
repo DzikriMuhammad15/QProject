@@ -366,8 +366,9 @@
       document.getElementById("formAddKambing").addEventListener("submit", e => e.preventDefault());
 
       // =============================================================
-      // DOWNLOAD SNAPSHOT EXCEL
-      // Gambar (bukti) dimasukkan sebagai hyperlink URL di sel Excel
+      // DOWNLOAD EXCEL — satu baris per mudhohi
+      // Kolom: Nama Mudhohi, Alamat, No HP, Jenis Hewan, No Hewan,
+      //        Status Pengiriman, Bukti Pengiriman (hyperlink)
       // =============================================================
       async function downloadExcel() {
         const btn = document.getElementById("buttonDownloadExcel");
@@ -378,65 +379,62 @@
           const response = await fetch("/admin/snapshot");
           if (!response.ok) throw new Error("Gagal mengambil data snapshot");
           const json = await response.json();
-          const rows = json.data;
+          // Hanya baris yang punya mudhohi (idMudhohi tidak kosong)
+          const rows = json.data.filter(r => r.idMudhohi !== '');
 
-          // Header kolom
           const headers = [
-            "Jenis Hewan", "No Hewan", "State", "Foto Hewan (URL)",
-            "ID Mudhohi", "Nama Mudhohi", "Alamat", "No HP",
-            "Sudah Dikirim?", "Tertunda?", "Bukti (URL)", "Username Pengirim"
+            "Nama Mudhohi", "Alamat", "No HP",
+            "Jenis Hewan", "No Hewan",
+            "Status Pengiriman", "Bukti Pengiriman"
           ];
 
+          const wb = XLSX.utils.book_new();
           const wsData = [headers];
+
           rows.forEach(row => {
+            let statusPengiriman;
+            if (row.isPostponed === 'Ya') {
+              statusPengiriman = 'Ditunda';
+            } else if (row.isDelivered === 'Ya') {
+              statusPengiriman = 'Sudah Dikirim';
+            } else {
+              statusPengiriman = 'Belum Dikirim';
+            }
+
             wsData.push([
-              row.jenis,
-              row.noHewan,
-              row.state,
-              row.fotoHewan,
-              row.idMudhohi,
               row.namaMudhohi,
               row.alamat,
               row.noHP,
-              row.isDelivered,
-              row.isPostponed,
-              row.bukti,
-              row.usernamePengirim
+              row.jenis,
+              row.noHewan,
+              statusPengiriman,
+              row.bukti || ''   // sementara teks biasa; diganti hyperlink di bawah
             ]);
           });
 
-          const wb = XLSX.utils.book_new();
           const ws = XLSX.utils.aoa_to_sheet(wsData);
 
-          // Lebar kolom otomatis
+          // Lebar kolom: Nama, Alamat, NoHP, Jenis, NoHewan, Status, Bukti
           ws['!cols'] = [
-            { wch: 12 }, { wch: 10 }, { wch: 28 }, { wch: 40 },
-            { wch: 28 }, { wch: 20 }, { wch: 30 }, { wch: 15 },
-            { wch: 14 }, { wch: 10 }, { wch: 40 }, { wch: 20 }
+            { wch: 24 }, { wch: 32 }, { wch: 16 },
+            { wch: 12 }, { wch: 10 },
+            { wch: 18 }, { wch: 40 }
           ];
 
-          // Buat hyperlink untuk kolom Foto Hewan (kolom D, index 3) dan Bukti (kolom K, index 10)
+          // Kolom Bukti Pengiriman (index 6) → hyperlink jika berisi URL
           rows.forEach((row, i) => {
-            const rowNum = i + 2; // baris ke-2 dst (baris 1 = header)
-
-            // Foto Hewan
-            if (row.fotoHewan && row.fotoHewan.startsWith('http')) {
-              const cellRef = XLSX.utils.encode_cell({ r: rowNum - 1, c: 3 });
-              ws[cellRef] = { v: row.fotoHewan, l: { Target: row.fotoHewan, Tooltip: "Lihat foto hewan" } };
-            }
-
-            // Bukti pengiriman
+            const r = i + 1; // index 0 = header
             if (row.bukti && row.bukti.startsWith('http')) {
-              const cellRef = XLSX.utils.encode_cell({ r: rowNum - 1, c: 10 });
-              ws[cellRef] = { v: row.bukti, l: { Target: row.bukti, Tooltip: "Lihat bukti pengiriman" } };
+              const cellRef = XLSX.utils.encode_cell({ r, c: 6 });
+              ws[cellRef] = { t: 's', v: 'Lihat Bukti', l: { Target: row.bukti, Tooltip: "Lihat bukti pengiriman" } };
             }
           });
 
-          XLSX.utils.book_append_sheet(wb, ws, "Snapshot Qurban");
+          XLSX.utils.book_append_sheet(wb, ws, "Data Mudhohi");
 
           const now = new Date();
           const timestamp = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
-          XLSX.writeFile(wb, `snapshot_qurban_${timestamp}.xlsx`);
+          XLSX.writeFile(wb, `data_mudhohi_${timestamp}.xlsx`);
         } catch (err) {
           alert("Gagal download Excel: " + err.message);
         } finally {

@@ -103,16 +103,22 @@
           <li class="divider">/</li>
           <li><a href="#" class="active">Dashboard</a></li>
         </ul>
-        <div class="info-data">
-          <div class="mb-3">
-            <button type="button" class="btn btn-warning" onclick="downloadExcel()">
-              <i class="fa-solid fa-file-excel me-1"></i> Download Snapshot Excel
-            </button>
+          <div class="info-data">
+            <div class="d-flex gap-2 mb-3 flex-wrap">
+              <button class="btn btn-primary" id="tabSapi" onclick="switchTab('sapi')">
+                <i class="fa-solid fa-cow me-1"></i> Sapi
+              </button>
+              <button class="btn btn-outline-success" id="tabKambing" onclick="switchTab('kambing')">
+                <i class="fa-solid fa-hippo me-1"></i> Kambing
+              </button>
+              <button type="button" class="btn btn-warning" onclick="downloadExcel()">
+                <i class="fa-solid fa-file-excel me-1"></i> Download Snapshot Excel
+              </button>
+            </div>
+            <section class="section" id="explore">
+              <!-- Project boxes will be dynamically inserted here -->
+            </section>
           </div>
-          <section class="section" id="explore">
-            <!-- Project boxes will be dynamically inserted here -->
-          </section>
-        </div>
         <div class="data"></div>
       </main>
     </section>
@@ -161,206 +167,143 @@
       crossorigin="anonymous"
     ></script>
     <script src="scripts/panitLt2Script.js"></script>
-    <script>
-      // Konfigurasi Firebase
-
-      // Inisialisasi Firebase
+<script>
       var firebaseConfig = <%- JSON.stringify(firebaseConfig) %>;
       firebase.initializeApp(firebaseConfig);
       const database = firebase.database();
 
-      // Referensi ke path data sapi
-      const sapiRef = database.ref("sapi/");
+      let currentTab = 'sapi';
+      let activeRef = null;
+      let activeListener = null;
 
-      // Fungsi untuk memperbarui konten halaman
-      function updateDataOnPage(sapi) {
-        const exploreSection = document.getElementById("explore");
-        exploreSection.innerHTML = "";
-        const body = document.querySelector("body");
+      function switchTab(jenis) {
+        currentTab = jenis;
+        document.getElementById('tabSapi').className = jenis === 'sapi' ? 'btn btn-primary' : 'btn btn-outline-primary';
+        document.getElementById('tabKambing').className = jenis === 'kambing' ? 'btn btn-success' : 'btn btn-outline-success';
+        document.getElementById('explore').innerHTML = '';
+        document.querySelectorAll('.modal-dinamis').forEach(el => el.remove());
+        if (activeRef && activeListener) {
+          activeRef.off('value', activeListener);
+        }
+        listenHewan(jenis);
+      }
 
-        for (let index = 0; index < Math.floor(sapi.length / 3) + 1; index++) {
-          const projectContainer = document.createElement("div");
-          projectContainer.className = "project-container";
+      function updateDataOnPage(hewanArr, jenis) {
+        const exploreSection = document.getElementById('explore');
+        exploreSection.innerHTML = '';
+        document.querySelectorAll('.modal-dinamis').forEach(el => el.remove());
+        const body = document.querySelector('body');
+        const iconClass = jenis === 'sapi' ? 'fa-cow' : 'fa-hippo';
+        const warna = jenis === 'sapi' ? '#74C0FC' : '#51CF66';
+        const labelHewan = jenis === 'sapi' ? 'Sapi' : 'Kambing';
 
-          for (let i = index * 3; i < index * 3 + 3; i++) {
-            if (i < sapi.length) {
-              const projectBox = document.createElement("div");
-              projectBox.className = "project-box";
-              projectBox.setAttribute("data-bs-toggle", "modal");
-              projectBox.setAttribute(
-                "data-bs-target",
-                `#modalSapi${sapi[i].idSapi}`
-              );
+        for (let index = 0; index < Math.ceil(hewanArr.length / 3); index++) {
+          const projectContainer = document.createElement('div');
+          projectContainer.className = 'project-container';
+          for (let i = index * 3; i < Math.min(index * 3 + 3, hewanArr.length); i++) {
+            const h = hewanArr[i];
+            const idHewan = h.idSapi;
+            const projectBox = document.createElement('div');
+            projectBox.className = 'project-box';
+            projectBox.setAttribute('data-bs-toggle', 'modal');
+            projectBox.setAttribute('data-bs-target', `#modalHewan${jenis}${idHewan}`);
+            projectBox.innerHTML = `
+              <i class="fa-solid ${iconClass}" style="color:${warna};"></i>
+              <h3>${labelHewan} ${idHewan}</h3>
+              <label>${h.state}</label>
+            `;
+            projectContainer.appendChild(projectBox);
 
-              projectBox.innerHTML = `
-          <i class="fa-solid fa-cow" style="color: #74C0FC;"></i>
-          <h3>Sapi ${sapi[i].idSapi}</h3>
-          <label>${sapi[i].state}</label>
-        `;
-              projectContainer.appendChild(projectBox);
-
-              // Cek apakah modal dengan ID ini sudah ada
-              let modal = document.getElementById(`modalSapi${sapi[i].idSapi}`);
-              if (modal) {
-                // Jika modal sudah ada, update konten di dalam modal
-                let temp = `
-          <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h1 class="modal-title fs-5" id="exampleModalLabel">Sapi ${sapi[i].idSapi}</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-              </div>
-              <div class="modal-body">
-          `;
-
-                const mudhohis = sapi[i].mudhohi;
-                mudhohis.forEach((mudhohi) => {
-
-                  temp += `
-              <hr>
-              <h2 class="fs-5">${mudhohi.name}</h2>
-              <p>Alamat: ${mudhohi.alamat}</p>`
-              if(mudhohi.isPostponed && !mudhohi.isDelivered){
-                temp += `<p>Status: <b>Tertunda</b><p>`
-              }
-              else if(mudhohi.isDelivered && !mudhohi.isPostponed){
-                temp += `<p>Status: <b>Sudah dikirim</b><p><br>
-                  <p>Username pengirim: ${mudhohi.usernamePengirim}</p><br>
-                  <p>Bukti: </p> <br>
-                  <img src="${mudhohi.bukti}"
-                style="width: 300px; height: auto; border-radius: 15px; object-fit: cover;"
-                />
-                  `
-              }
-              else{
-                temp += `<p>Status: <b>Belum dikirim</b><p>`
-              }
-                });
-
-                temp += `</div></div></div>`;
-                modal.innerHTML = temp;
+            let modal = document.getElementById(`modalHewan${jenis}${idHewan}`);
+            const mudhohiHtml = h.mudhohi.map(m => {
+              let statusHtml = '';
+              if (m.isPostponed && !m.isDelivered) {
+                statusHtml = `<p>Status: <b>Tertunda</b></p>`;
+              } else if (m.isDelivered && !m.isPostponed) {
+                statusHtml = `<p>Status: <b>Sudah dikirim</b></p>
+                  <p>Username pengirim: ${m.usernamePengirim}</p>
+                  <p>Bukti:</p>
+                  <img src="${m.bukti}" style="width:300px;height:auto;border-radius:15px;object-fit:cover;" />`;
               } else {
-                // Jika modal belum ada, buat modal baru
-                modal = document.createElement("div");
-                modal.className = "modal fade";
-                modal.setAttribute("id", `modalSapi${sapi[i].idSapi}`);
-                modal.setAttribute("tabindex", "-1");
-                modal.setAttribute("aria-labelledby", "exampleModalLabel");
-                modal.setAttribute("aria-hidden", "true");
-
-                let temp = `
-          <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h1 class="modal-title fs-5" id="exampleModalLabel">Sapi ${sapi[i].idSapi}</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-              </div>
-              <div class="modal-body">
-          `;
-
-                const mudhohis = sapi[i].mudhohi;
-                mudhohis.forEach((mudhohi) => {
-                  console.log(mudhohi);
-                  temp += `
-              <hr>
-              <h2 class="fs-5">${mudhohi.name}</h2>
-              <p>Alamat: ${mudhohi.alamat}</p>`
-
-              if(mudhohi.isPostponed && !mudhohi.isDelivered){
-                temp += `<p>Status: <b>Tertunda</b><p>`
+                statusHtml = `<p>Status: <b>Belum dikirim</b></p>`;
               }
-              else if(mudhohi.isDelivered && !mudhohi.isPostponed){
-                temp += `<p>Status: <b>Sudah dikirim</b><p><br>
-                  <p>Username pengirim: ${mudhohi.usernamePengirim}</p><br>
-                  <p>Bukti: </p> <br>
-                  <img src="${mudhohi.bukti}"
-                style="width: 300px; height: auto; border-radius: 15px; object-fit: cover;"
-                />
-                  `
-              }
-              else{
-                temp += `<p>Status: <b>Belum dikirim</b><p>`
-              }
-                });
+              return `<hr><h2 class="fs-5">${m.name || '-'}</h2><p>Alamat: ${m.alamat || '-'}</p>${statusHtml}`;
+            }).join('');
 
-                temp += `</div></div></div>`;
-                modal.innerHTML = temp;
-                body.appendChild(modal); // Append modal baru ke body
-              }
+            const modalContent = `
+              <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h1 class="modal-title fs-5">${labelHewan} ${idHewan}</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                  </div>
+                  <div class="modal-body">${mudhohiHtml}</div>
+                </div>
+              </div>`;
+
+            if (modal) {
+              modal.innerHTML = modalContent;
+            } else {
+              modal = document.createElement('div');
+              modal.className = 'modal fade modal-dinamis';
+              modal.setAttribute('id', `modalHewan${jenis}${idHewan}`);
+              modal.setAttribute('tabindex', '-1');
+              modal.innerHTML = modalContent;
+              body.appendChild(modal);
             }
           }
           exploreSection.appendChild(projectContainer);
         }
       }
 
-      async function transformData(data) {
+      async function transformHewanData(data, jenis) {
         const result = [];
-
-        for (const idSapi in data) {
-          const sapi = data[idSapi];
-          const sapiObj = {
-            idSapi: idSapi,
-            foto: sapi.foto,
-            state: sapi.state,
-            mudhohi: [],
-          };
-
-          for (const key in sapi) {
-            if (
-              key !== "foto" &&
-              key !== "state" &&
-              typeof sapi[key] === "object"
-            ) {
-              const mudhohiObj = await database
-                .ref("mudhohis/" + key)
-                .once("value")
-                .then((snapshot) => snapshot.val());
-
-              const userObj = await database
-                .ref("users/")
-                .orderByChild("mudhohiId")
-                .equalTo(key)
-                .once("value")
-                .then((snapshot) => {
-                  const userData = snapshot.val();
-                  if (userData) {
-                    const firstUserKey = Object.keys(userData)[0];
-                    return userData[firstUserKey].name;
-                  }
-                  return null;
-                });
-
-              sapiObj.mudhohi.push({
-                idMudhohi: key,
-                ...mudhohiObj,
-                name: userObj,
-                isDelivered: sapi[key].isDelivered,
-                isPostponed: sapi[key].isPostponed,
-                bukti: sapi[key].bukti,
-                usernamePengirim: sapi[key].usernamePengirim
+        for (const idHewan in data) {
+          const hewan = data[idHewan];
+          const hewanObj = { idSapi: idHewan, foto: hewan.foto, state: hewan.state, mudhohi: [] };
+          for (const key in hewan) {
+            if (key !== 'foto' && key !== 'state' && typeof hewan[key] === 'object') {
+              const mudhohiObj = await database.ref('mudhohis/' + key).once('value').then(s => s.val());
+              const userObj = await database.ref('users/').orderByChild('mudhohiId').equalTo(key).once('value').then(s => {
+                const d = s.val();
+                if (d) { const k = Object.keys(d)[0]; return d[k].name; }
+                return null;
+              });
+              hewanObj.mudhohi.push({
+                idMudhohi: key, ...mudhohiObj, name: userObj,
+                isDelivered: hewan[key].isDelivered,
+                isPostponed: hewan[key].isPostponed,
+                bukti: hewan[key].bukti,
+                usernamePengirim: hewan[key].usernamePengirim
               });
             }
           }
-
-          result.push(sapiObj);
+          result.push(hewanObj);
         }
-
         return result;
       }
 
-      // Listen untuk perubahan data
-      sapiRef.on("value", async (snapshot) => {
-        const data = snapshot.val();
-        console.log("halow");
-        if (data) {
-          const sapiArray = await transformData(data);
-          console.log(sapiArray);
-          updateDataOnPage(sapiArray);
-        }
-      });
+      function listenHewan(jenis) {
+        const ref = database.ref(jenis + '/');
+        activeRef = ref;
+        activeListener = ref.on('value', async snapshot => {
+          if (currentTab !== jenis) return;
+          const data = snapshot.val();
+          if (data) {
+            const arr = await transformHewanData(data, jenis);
+            updateDataOnPage(arr, jenis);
+          } else {
+            document.getElementById('explore').innerHTML = `<p class="text-muted">Belum ada data ${jenis}.</p>`;
+          }
+        });
+      }
+
+      listenHewan('sapi');
 
       // =============================================================
-      // DOWNLOAD SNAPSHOT EXCEL (panitLt2)
+      // DOWNLOAD EXCEL (panitLt2) — satu baris per mudhohi
+      // Kolom: Nama Mudhohi, Alamat, No HP, Jenis Hewan, No Hewan,
+      //        Status Pengiriman, Bukti Pengiriman (hyperlink)
       // =============================================================
       async function downloadExcel() {
         const btn = document.querySelector('[onclick="downloadExcel()"]');
@@ -369,48 +312,59 @@
           const response = await fetch("/panitLt2/snapshot");
           if (!response.ok) throw new Error("Gagal mengambil data snapshot");
           const json = await response.json();
-          const rows = json.data;
+          // Hanya baris yang punya mudhohi (idMudhohi tidak kosong)
+          const rows = json.data.filter(r => r.idMudhohi !== '');
 
           const headers = [
-            "Jenis Hewan", "No Hewan", "State", "Foto Hewan (URL)",
-            "ID Mudhohi", "Nama Mudhohi", "Alamat", "No HP",
-            "Sudah Dikirim?", "Tertunda?", "Bukti (URL)", "Username Pengirim"
+            "Nama Mudhohi", "Alamat", "No HP",
+            "Jenis Hewan", "No Hewan",
+            "Status Pengiriman", "Bukti Pengiriman"
           ];
 
+          const wb = XLSX.utils.book_new();
           const wsData = [headers];
+
           rows.forEach(row => {
+            let statusPengiriman;
+            if (row.isPostponed === 'Ya') {
+              statusPengiriman = 'Ditunda';
+            } else if (row.isDelivered === 'Ya') {
+              statusPengiriman = 'Sudah Dikirim';
+            } else {
+              statusPengiriman = 'Belum Dikirim';
+            }
+
             wsData.push([
-              row.jenis, row.noHewan, row.state, row.fotoHewan,
-              row.idMudhohi, row.namaMudhohi, row.alamat, row.noHP,
-              row.isDelivered, row.isPostponed, row.bukti, row.usernamePengirim
+              row.namaMudhohi,
+              row.alamat,
+              row.noHP,
+              row.jenis,
+              row.noHewan,
+              statusPengiriman,
+              row.bukti || ''
             ]);
           });
 
-          const wb = XLSX.utils.book_new();
           const ws = XLSX.utils.aoa_to_sheet(wsData);
           ws['!cols'] = [
-            { wch: 12 }, { wch: 10 }, { wch: 28 }, { wch: 40 },
-            { wch: 28 }, { wch: 20 }, { wch: 30 }, { wch: 15 },
-            { wch: 14 }, { wch: 10 }, { wch: 40 }, { wch: 20 }
+            { wch: 24 }, { wch: 32 }, { wch: 16 },
+            { wch: 12 }, { wch: 10 },
+            { wch: 18 }, { wch: 40 }
           ];
 
-          // Hyperlink untuk kolom Foto Hewan dan Bukti
+          // Kolom Bukti Pengiriman (index 6) → hyperlink jika berisi URL
           rows.forEach((row, i) => {
-            const rowNum = i + 2;
-            if (row.fotoHewan && row.fotoHewan.startsWith('http')) {
-              const cellRef = XLSX.utils.encode_cell({ r: rowNum - 1, c: 3 });
-              ws[cellRef] = { v: row.fotoHewan, l: { Target: row.fotoHewan, Tooltip: "Lihat foto hewan" } };
-            }
+            const r = i + 1;
             if (row.bukti && row.bukti.startsWith('http')) {
-              const cellRef = XLSX.utils.encode_cell({ r: rowNum - 1, c: 10 });
-              ws[cellRef] = { v: row.bukti, l: { Target: row.bukti, Tooltip: "Lihat bukti pengiriman" } };
+              const cellRef = XLSX.utils.encode_cell({ r, c: 6 });
+              ws[cellRef] = { t: 's', v: 'Lihat Bukti', l: { Target: row.bukti, Tooltip: "Lihat bukti pengiriman" } };
             }
           });
 
-          XLSX.utils.book_append_sheet(wb, ws, "Snapshot Qurban");
+          XLSX.utils.book_append_sheet(wb, ws, "Data Mudhohi");
           const now = new Date();
           const ts = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
-          XLSX.writeFile(wb, `snapshot_qurban_${ts}.xlsx`);
+          XLSX.writeFile(wb, `data_mudhohi_${ts}.xlsx`);
         } catch (err) {
           alert("Gagal download Excel: " + err.message);
         } finally {

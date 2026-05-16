@@ -90,7 +90,7 @@ module.exports.protectRoute = (req, res, next) => {
     // TODO ambil token dari cookies
     const token = req.cookies['jwt'];
     // TODO cek jwtnya ada ato enggak
-    if (jwt) {
+    if (token) {
         //cek apaka masuk
         // TODO kalo ada, cek apakah terverifikasi
         jwt.verify(token, "9cdef41de4e4016adb9d8bascbsaocjbasovbaowq9071291179", async (err, decodedToken) => {

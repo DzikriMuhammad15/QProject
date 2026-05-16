@@ -3,74 +3,27 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Stylesheets -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
-      crossorigin="anonymous"
-    />
-    <link
-      href="https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css"
-      rel="stylesheet"
-    />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link href="https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="/stylesheets/changeStatusLt3Style.css" />
-    <!-- --------- FAVICON ---------- -->
-    <link
-      rel="shortcut icon"
-      href="assets/img/logiPsikologi.png"
-      type="image/x-icon"
-    />
     <title>Qurban</title>
-    <!-- font awesome icon -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
-      integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    />
-
-    <!-- Firebase SDK v8 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Firebase SDK v8 (Realtime Database SAJA - tanpa Storage) -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   </head>
   <body>
-    <!-- SIDEBAR -->
     <section id="sidebar">
-      <a href="#" class="brand"
-        ><i
-          class="fa-solid fa-star-and-crescent icon"
-          style="color: #74c0fc"
-        ></i>
-        Qurban</a
-      >
+      <a href="#" class="brand"><i class="fa-solid fa-star-and-crescent icon" style="color: #74c0fc"></i> Qurban</a>
       <ul class="side-menu">
-        <li>
-          <a href="/panitLt3"
-            ><i class="bx bxs-dashboard icon"></i> Dashboard</a
-          >
-        </li>
+        <li><a href="/panitLt3"><i class="bx bxs-dashboard icon"></i> Dashboard</a></li>
         <li class="divider" data-text="main">Main</li>
-        <li>
-          <a href="#" class="active"
-            ><i class="bx bxs-chart icon"></i> Change Status</a
-          >
-        </li>
-        <li>
-          <a href="/panitLt3/revertDeliver"
-            ><i class="bx bxs-chart icon"></i> Revert Deliver</a
-          >
-        </li>
-        <li>
-          <a href="/panitLt3/revertPostpone"
-            ><i class="bx bxs-chart icon"></i> Revert Postpone</a
-          >
-        </li>
+        <li><a href="#" class="active"><i class="bx bxs-chart icon"></i> Change Status</a></li>
+        <li><a href="/panitLt3/revertDeliver"><i class="bx bxs-chart icon"></i> Revert Deliver</a></li>
+        <li><a href="/panitLt3/revertPostpone"><i class="bx bxs-chart icon"></i> Revert Postpone</a></li>
       </ul>
     </section>
 
-    <!-- NAVBAR -->
     <section id="content">
       <nav>
         <i class="bx bx-menu toggle-sidebar"></i>
@@ -79,16 +32,10 @@
         <div class="profile">
           <img src="/img/people.png" alt="" />
           <ul class="profile-link">
-            <li>
-              <a data-bs-toggle="modal" data-bs-target="#modalLogout"
-                ><i class="bx bxs-log-out-circle"></i> Logout</a
-              >
-            </li>
+            <li><a data-bs-toggle="modal" data-bs-target="#modalLogout"><i class="bx bxs-log-out-circle"></i> Logout</a></li>
           </ul>
         </div>
       </nav>
-
-      <!-- MAIN -->
       <main>
         <ul class="breadcrumbs">
           <li><a href="#">Home</a></li>
@@ -97,12 +44,20 @@
           <li class="divider">/</li>
           <li><a href="#" class="active">Change Status</a></li>
         </ul>
-        <div class="info-data">
-          <section class="section" id="explore">
-            <!-- Project boxes will be dynamically inserted here -->
-          </section>
+
+        <!-- Tab Sapi / Kambing -->
+        <div class="d-flex gap-2 mb-3">
+          <button class="btn btn-primary" id="tabSapi" onclick="switchTab('sapi')">
+            <i class="fa-solid fa-cow me-1"></i> Sapi
+          </button>
+          <button class="btn btn-outline-success" id="tabKambing" onclick="switchTab('kambing')">
+            <i class="fa-solid fa-hippo me-1"></i> Kambing
+          </button>
         </div>
-        <div class="data"></div>
+
+        <div class="info-data">
+          <section class="section" id="explore"></section>
+        </div>
       </main>
     </section>
 
@@ -110,459 +65,285 @@
     <div class="modal fade" id="modalLogout" tabindex="-1">
       <div class="modal-dialog">
         <div class="modal-content">
-          <div class="modal-header">
-            <h1 class="modal-title fs-5" id="exampleModalLabel">Logout</h1>
-          </div>
+          <div class="modal-header"><h1 class="modal-title fs-5">Logout</h1></div>
           <div class="modal-body">Are you sure want to logout?</div>
           <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-bs-dismiss="modal"
-            >
-              Back
-            </button>
-            <a href="/auth/logout">
-              <button type="button" class="btn btn-danger lastLogoutButton">
-                Logout
-              </button>
-            </a>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Back</button>
+            <a href="/auth/logout"><button type="button" class="btn btn-danger">Logout</button></a>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- JavaScript SDK -->
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-      crossorigin="anonymous"
-    ></script>
-    <script
-      src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
-      integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
-      crossorigin="anonymous"
-    ></script>
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
-      integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
-      crossorigin="anonymous"
-    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
     <script src="/scripts/changeStatusLt3Script.js"></script>
-    <script type="module">
-      // Konfigurasi Firebase
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-      import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js";
-      import { getDatabase, ref as dbRef, set, push, onValue } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
-
-      // Inisialisasi Firebase
+    <script>
       var firebaseConfig = <%- JSON.stringify(firebaseConfig) %>;
       firebase.initializeApp(firebaseConfig);
       const database = firebase.database();
-      const app = initializeApp(firebaseConfig);
-      const storage = getStorage(app);
 
+      let currentTab = 'sapi';
+      let activeListener = null;
+      let activeRef = null;
 
-      // Referensi ke path data sapi
-      const sapiRef = database.ref("sapi/");
+      // ─── Tab Switch ────────────────────────────────────────────────
+      function switchTab(tab) {
+        currentTab = tab;
+        document.getElementById('tabSapi').className =
+          tab === 'sapi' ? 'btn btn-primary' : 'btn btn-outline-primary';
+        document.getElementById('tabKambing').className =
+          tab === 'kambing' ? 'btn btn-success' : 'btn btn-outline-success';
 
-      // Fungsi untuk memperbarui konten halaman
-      function updateDataOnPage(mudhohiList) {
-        const exploreSection = document.getElementById("explore");
-        exploreSection.innerHTML = ""; // Kosongkan kontainer
-        const body = document.querySelector("body");
-
-        for (
-          let index = 0;
-          index < Math.floor(mudhohiList.length / 3) + 1;
-          index++
-        ) {
-          const projectContainer = document.createElement("div");
-          projectContainer.className = "project-container";
-
-          for (let i = index * 3; i < index * 3 + 3; i++) {
-            if (i < mudhohiList.length) {
-              const mudhohi = mudhohiList[i];
-              const projectBox = document.createElement("div");
-              projectBox.className = "project-box";
-              projectBox.setAttribute("data-bs-toggle", "modal");
-              projectBox.setAttribute(
-                "data-bs-target",
-                `#modalMudhohi${mudhohi.idMudhohi}`
-              );
-
-              projectBox.innerHTML = `
-                <i class="fa-solid fa-person" style="color: #74C0FC;"></i>
-                <h3>${mudhohi.name}</h3>
-                <label>${mudhohi.alamat}</label>
-                <label>No Sapi: ${mudhohi.noSapi}</label>
-              `;
-              projectContainer.appendChild(projectBox);
-
-              // buat modal
-              const modal = document.createElement("div");
-              modal.className = "modal fade";
-              modal.setAttribute("id", `modalMudhohi${mudhohi.idMudhohi}`);
-              modal.setAttribute("tabindex", "-1");
-              modal.setAttribute("aria-labelledby", "exampleModalLabel");
-              modal.setAttribute("aria-hidden", "true");
-              modal.innerHTML = `
-                <div class="modal-dialog">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h1 class="modal-title fs-5" id="exampleModalLabel">${mudhohi.name}</h1>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                      <b>Alamat : </b> ${mudhohi.alamat} <br>
-                      <b>No Handphone : </b> ${mudhohi.noHP} <br>
-                    </div>
-                    <div class="modal-footer">
-                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                      <button type="button" class="btn btn-danger postponeDagingButton" data-idMudhohi="${mudhohi.idMudhohi}" data-idSapi="${mudhohi.noSapi}">Postpone</button>
-                      <button type="button" class="btn btn-primary uploadGambarButton" data-idMudhohi="${mudhohi.idMudhohi}" data-idSapi="${mudhohi.noSapi}">Deliver</button>
-                    </div>
-                  </div>
-                </div>
-              `;
-              body.appendChild(modal);
-              const modalUploadGambar = document.createElement("div");
-              modalUploadGambar.className = "modal fade";
-              modalUploadGambar.setAttribute("id", `modalMudhohiUpload${mudhohi.idMudhohi}`);
-              modalUploadGambar.setAttribute("tabindex", "-1");
-              modalUploadGambar.setAttribute("aria-labelledby", "exampleModalLabel");
-              modalUploadGambar.setAttribute("aria-hidden", "true");
-              modalUploadGambar.innerHTML = `
-                <div class="modal-dialog">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h1 class="modal-title fs-5" id="exampleModalLabel">${mudhohi.name}</h1>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                          <form id="uploadForm">
-                              <input type="file" id="imageFile${mudhohi.idMudhohi}" accept="image/*" required>
-                          </form>
-                    </div>
-                    <div class="modal-footer">
-                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                      <button type="button" class="btn btn-primary deliverDagingButton" data-idMudhohi="${mudhohi.idMudhohi}" data-idSapi="${mudhohi.noSapi}">Deliver</button>
-                    </div>
-                  </div>
-                </div>
-              `;
-              body.appendChild(modalUploadGambar);
-            }
-          }
-          exploreSection.appendChild(projectContainer);
+        // Cabut listener lama
+        if (activeRef && activeListener) {
+          activeRef.off('value', activeListener);
+          activeListener = null;
         }
+        document.getElementById('explore').innerHTML = '';
+        document.querySelectorAll('.modal-dinamis').forEach(el => el.remove());
+
+        listenHewan(tab);
       }
 
-      async function transformData(data) {
+      // ─── Transform Data ────────────────────────────────────────────
+      async function transformHewanData(hewanData, jenis) {
         const result = [];
-
-        // Loop melalui setiap key di object data
-        for (const idSapi in data) {
-          const sapi = data[idSapi];
-          const sapiObj = {
-            idSapi: idSapi,
-            foto: sapi.foto,
-            state: sapi.state,
-            mudhohi: [],
-          };
-
-          // Loop melalui setiap key di dalam object sapi
-          for (const key in sapi) {
-            if (
-              key !== "foto" &&
-              key !== "state" &&
-              typeof sapi[key] === "object"
-            ) {
-              // Fetch mudhohi data from "mudhohis/"
-              const mudhohiObj = await database
-                .ref("mudhohis/" + key)
-                .once("value")
-                .then((snapshot) => snapshot.val());
-
-              // Fetch name from "users/" based on mudhohiId
-              const userObj = await database
-                .ref("users/")
-                .orderByChild("mudhohiId")
-                .equalTo(key)
-                .once("value")
-                .then((snapshot) => {
-                  const userData = snapshot.val();
-                  if (userData) {
-                    // Retrieve the first user's name
-                    const firstUserKey = Object.keys(userData)[0];
-                    return userData[firstUserKey].name;
-                  }
-                  return null;
-                });
-
-              // Add mudhohi object with the name and additional fields to sapiObj
-              sapiObj.mudhohi.push({
-                idMudhohi: key,
-                ...mudhohiObj,
-                name: userObj,
-                isDelivered: sapi[key].isDelivered,
-                isPostponed: sapi[key].isPostponed,
-                bukti: sapi[key].bukti,
+        for (const idHewan in hewanData) {
+          const hewan = hewanData[idHewan];
+          const hewanObj = { idHewan, jenis, foto: hewan.foto, state: hewan.state, mudhohi: [] };
+          for (const key in hewan) {
+            if (key !== 'foto' && key !== 'state' && typeof hewan[key] === 'object') {
+              const mudhohiObj = await database.ref('mudhohis/' + key).once('value').then(s => s.val());
+              const userName = await database.ref('users/').orderByChild('mudhohiId').equalTo(key).once('value').then(s => {
+                const d = s.val();
+                if (d) return d[Object.keys(d)[0]].name;
+                return null;
+              });
+              hewanObj.mudhohi.push({
+                idMudhohi: key, ...mudhohiObj, name: userName,
+                isDelivered: hewan[key].isDelivered, isPostponed: hewan[key].isPostponed,
+                bukti: hewan[key].bukti, noHewan: idHewan, jenis
               });
             }
           }
-
-          result.push(sapiObj);
+          result.push(hewanObj);
         }
-
         return result;
       }
 
-      // Listen untuk perubahan data
-      sapiRef.on("value", async (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          const sapiArray = await transformData(data);
+      // ─── Render ────────────────────────────────────────────────────
+      function updateDataOnPage(mudhohiList, jenis) {
+        const exploreSection = document.getElementById('explore');
+        exploreSection.innerHTML = '';
+        document.querySelectorAll('.modal-dinamis').forEach(el => el.remove());
+        const body = document.querySelector('body');
+        const iconClass = jenis === 'sapi' ? 'fa-cow' : 'fa-hippo';
+        const warna = jenis === 'sapi' ? '#74C0FC' : '#63d88a';
 
-          // Filter sapiArray untuk hanya menyertakan sapi dengan state "Siap Dibagikan" atau "Sedang Dibagikan"
-          const filteredSapiArray = sapiArray.filter(
-            (sapi) =>
-              sapi.state === "Siap Dibagikan" ||
-              sapi.state === "Sedang Dibagikan ke Mudhohi"
-          );
+        if (mudhohiList.length === 0) {
+          exploreSection.innerHTML = '<p class="text-muted">Tidak ada data yang perlu diproses.</p>';
+          return;
+        }
 
-          // Extract mudhohi from the filtered sapi
-          var mudhohiList = filteredSapiArray.flatMap((sapi) => sapi.mudhohi);
+        for (let index = 0; index < Math.ceil(mudhohiList.length / 3); index++) {
+          const container = document.createElement('div');
+          container.className = 'project-container';
+          for (let i = index * 3; i < Math.min(index * 3 + 3, mudhohiList.length); i++) {
+            const m = mudhohiList[i];
+            const { idMudhohi, noHewan } = m;
 
-          // filter hanya mudhohi yaang isDelivered dan isPostponednya false saja
-          mudhohiList = mudhohiList.filter(
-            (mudhohi) =>
-              mudhohi.isDelivered === false && mudhohi.isPostponed === false
-          );
-          console.log(mudhohiList);
+            // Card
+            const box = document.createElement('div');
+            box.className = 'project-box';
+            box.setAttribute('data-bs-toggle', 'modal');
+            box.setAttribute('data-bs-target', `#modalMudhohi${idMudhohi}`);
+            box.innerHTML = `
+              <i class="fa-solid ${iconClass}" style="color:${warna};"></i>
+              <h3>${m.name || '-'}</h3>
+              <label>${m.alamat || '-'}</label>
+              <label>No ${jenis === 'sapi' ? 'Sapi' : 'Kambing'}: ${noHewan}</label>
+              <span class="badge bg-${jenis === 'sapi' ? 'primary' : 'success'} mt-1">${jenis.toUpperCase()}</span>
+            `;
+            container.appendChild(box);
 
-          // Update halaman dengan mudhohiList
-          updateDataOnPage(mudhohiList);
+            // Modal konfirmasi
+            const modal = document.createElement('div');
+            modal.className = 'modal fade modal-dinamis';
+            modal.id = `modalMudhohi${idMudhohi}`;
+            modal.setAttribute('tabindex', '-1');
+            modal.innerHTML = `
+              <div class="modal-dialog"><div class="modal-content">
+                <div class="modal-header">
+                  <h1 class="modal-title fs-5">${m.name || '-'}</h1>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                  <b>Alamat:</b> ${m.alamat || '-'}<br>
+                  <b>No HP:</b> ${m.noHP || '-'}<br>
+                  <b>Hewan:</b> ${jenis.toUpperCase()} No ${noHewan}
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                  <button type="button" class="btn btn-danger postponeDagingButton"
+                    data-idmudhohi="${idMudhohi}" data-idhewan="${noHewan}" data-jenis="${jenis}">Postpone</button>
+                  <button type="button" class="btn btn-primary uploadGambarButton"
+                    data-idmudhohi="${idMudhohi}" data-idhewan="${noHewan}" data-jenis="${jenis}">Deliver</button>
+                </div>
+              </div></div>
+            `;
+            body.appendChild(modal);
 
+            // Modal upload
+            const modalUpload = document.createElement('div');
+            modalUpload.className = 'modal fade modal-dinamis';
+            modalUpload.id = `modalMudhohiUpload${idMudhohi}`;
+            modalUpload.setAttribute('tabindex', '-1');
+            modalUpload.innerHTML = `
+              <div class="modal-dialog"><div class="modal-content">
+                <div class="modal-header">
+                  <h1 class="modal-title fs-5">Upload Bukti — ${m.name || '-'}</h1>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                  <label class="form-label">Foto Bukti Pengiriman</label>
+                  <input type="file" class="form-control" id="imageFile${idMudhohi}" accept="image/*" required>
+                  <div id="uploadStatus${idMudhohi}" class="mt-2 small"></div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                  <button type="button" class="btn btn-primary deliverDagingButton"
+                    data-idmudhohi="${idMudhohi}" data-idhewan="${noHewan}" data-jenis="${jenis}">Deliver</button>
+                </div>
+              </div></div>
+            `;
+            body.appendChild(modalUpload);
+          }
+          exploreSection.appendChild(container);
+        }
 
+        // Handler: buka modal upload
+        document.querySelectorAll('.uploadGambarButton').forEach(btn => {
+          btn.addEventListener('click', e => {
+            e.preventDefault();
+            const idMudhohi = btn.dataset.idmudhohi;
+            closeModal(`modalMudhohi${idMudhohi}`);
+            setTimeout(() => {
+              new bootstrap.Modal(document.getElementById(`modalMudhohiUpload${idMudhohi}`), { keyboard: false }).show();
+            }, 350);
+          });
+        });
 
-          // uploadGambarButton handler
-          const uploadGambarButton = document.querySelectorAll(".uploadGambarButton");
-          uploadGambarButton.forEach((button) => {
-            button.addEventListener("click", async (e) => {
+        // Handler: deliver (upload ke Cloudinary via backend, lalu PUT /deliver)
+        document.querySelectorAll('.deliverDagingButton').forEach(btn => {
+          btn.addEventListener('click', async e => {
+            e.preventDefault();
+            const { idmudhohi: idMudhohi, idhewan, jenis: jenisDariModal } = btn.dataset;
+            const idHewan = parseInt(idhewan);
+            const fileInput = document.getElementById(`imageFile${idMudhohi}`);
+            const file = fileInput.files[0];
+            const statusEl = document.getElementById(`uploadStatus${idMudhohi}`);
 
-              e.preventDefault();
-              const idMudhohi = button.dataset.idmudhohi;
-              console.log(idMudhohi);
-            // tutup modal pertama
-            // Temukan elemen modal berdasarkan id mudhohi
-            const modalElement = document.getElementById(
-              `modalMudhohi${idMudhohi}`
-            );
-            // Pastikan modal diakses dengan aman
-            if (modalElement) {
-              // Jika menggunakan Bootstrap 5 dan modal instance diperlukan
-              const modalInstance =
-                bootstrap.Modal.getInstance(modalElement);
-              if (modalInstance) {
-                modalInstance.hide(); // Menutup modal dengan Bootstrap
-
-                // Berikan waktu agar Bootstrap menyelesaikan proses tutup modal
-                setTimeout(() => {
-                  // Hapus modal element jika perlu
-                  modalElement.classList.remove("show");
-                  modalElement.removeAttribute("aria-modal");
-                  modalElement.style.display = "none";
-
-                  // Hilangkan backdrop
-                  const modalBackdrop =
-                    document.querySelector(".modal-backdrop");
-                  if (modalBackdrop) {
-                    modalBackdrop.remove();
-                  }
-
-                  // Kembalikan scroll pada body
-                  document.body.classList.remove("modal-open");
-                  document.body.style = "";
-
-                  modalInstance.dispose(); // Hapus instance modal
-                }, 300); // Menunda selama 300ms
-              }
+            if (!file) {
+              statusEl.textContent = 'Pilih file gambar terlebih dahulu.';
+              statusEl.className = 'text-danger small';
+              return;
             }
 
-            // buka modal upload
-            var myModal = new bootstrap.Modal(document.getElementById(`modalMudhohiUpload${idMudhohi}`), {
-              keyboard: false
-            });
+            try {
+              btn.disabled = true;
+              statusEl.textContent = 'Mengupload gambar ke Cloudinary...';
+              statusEl.className = 'text-muted small';
 
-            // Buka modal secara otomatis
-            myModal.show();
+              // 1. Upload foto ke Cloudinary via backend
+              const formData = new FormData();
+              formData.append('bukti', file);
+              const uploadRes = await fetch('/panitLt3/uploadBukti', { method: 'POST', body: formData });
+              if (!uploadRes.ok) throw new Error((await uploadRes.json()).message || 'Upload gagal');
+              const { url: downloadURL } = await uploadRes.json();
 
+              fileInput.value = '';
+              statusEl.textContent = 'Upload berhasil, menyimpan data...';
 
+              // 2. Simpan data deliver ke Firebase
+              const res = await fetch('/panitLt3/deliver', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idSapi: idHewan, idMudhohi, bukti: downloadURL, jenis: jenisDariModal })
+              });
+              if (res.status !== 200) throw new Error((await res.json()).message);
 
-          })
-
-
-
-          })
-          // deliverDagingButton handler
-          const deliverDagingButton = document.querySelectorAll(
-            ".deliverDagingButton"
-          );
-          deliverDagingButton.forEach((button) => {
-            button.addEventListener("click", async (e) => {
-              e.preventDefault();
-              const idMudhohi = button.dataset.idmudhohi;
-              const fileInput = document.getElementById(`imageFile${idMudhohi}`);
-              const file = fileInput.files[0]
-              console.log(fileInput);
-              console.log(file);
-              const idSapi = parseInt(button.dataset.idsapi);
-              console.log({ idMudhohi, idSapi });
-              console.log(button);
-
-              if(file){
-                console.log("gambar berhasil masuk");
-                // Upload gambar ke Firebase Storage
-                const storageRef = ref(storage, 'images/' + file.name);
-                await uploadBytes(storageRef, file);
-
-                // Mendapatkan URL gambar
-                const downloadURL = await getDownloadURL(storageRef);
-                document.getElementById(`imageFile${idMudhohi}`).value = "";
-
-                const url = "/panitLt3/deliver";
-                const data = { idSapi, idMudhohi, bukti: downloadURL };
-                const option = {
-                  method: "PUT",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify(data),
-                };
-                const result = await fetch(url, option);
-                const statusCode = result.status;
-                const hasil = await result.json();
-                if (statusCode != 200) {
-                  console.log(hasil);
-                } else {
-                  console.log("berhasil fetch");
-
-                  // Temukan elemen modal berdasarkan id mudhohi
-                  const modalElement = document.getElementById(
-                    `modalMudhohiUpload${idMudhohi}`
-                  );
-
-                  // Pastikan modal diakses dengan aman
-                  if (modalElement) {
-                    // Jika menggunakan Bootstrap 5 dan modal instance diperlukan
-                    const modalInstance =
-                      bootstrap.Modal.getInstance(modalElement);
-                    if (modalInstance) {
-                      modalInstance.hide(); // Menutup modal dengan Bootstrap
-
-                      // Berikan waktu agar Bootstrap menyelesaikan proses tutup modal
-                      setTimeout(() => {
-                        // Hapus modal element jika perlu
-                        modalElement.classList.remove("show");
-                        modalElement.removeAttribute("aria-modal");
-                        modalElement.style.display = "none";
-
-                        // Hilangkan backdrop
-                        const modalBackdrop =
-                          document.querySelector(".modal-backdrop");
-                        if (modalBackdrop) {
-                          modalBackdrop.remove();
-                        }
-
-                        // Kembalikan scroll pada body
-                        document.body.classList.remove("modal-open");
-                        document.body.style = "";
-
-                        modalInstance.dispose(); // Hapus instance modal
-                      }, 300); // Menunda selama 300ms
-                    }
-                  }
-                }
-              }
-              else{
-                console.log("tidak ada gambar yang masuk");
-                document.getElementById(`imageFile${idMudhohi}`).value = "";
-
-              }
-            });
+              statusEl.textContent = 'Berhasil dikirim!';
+              statusEl.className = 'text-success small';
+              setTimeout(() => closeModal(`modalMudhohiUpload${idMudhohi}`), 500);
+            } catch (err) {
+              statusEl.textContent = 'Error: ' + err.message;
+              statusEl.className = 'text-danger small';
+            } finally {
+              btn.disabled = false;
+            }
           });
+        });
 
-          // deliverDagingButton handler
-          const postponeDagingButton = document.querySelectorAll(
-            ".postponeDagingButton"
-          );
-          postponeDagingButton.forEach((button) => {
-            button.addEventListener("click", async (e) => {
-              e.preventDefault();
-              const idMudhohi = button.dataset.idmudhohi;
-              const idSapi = parseInt(button.dataset.idsapi);
-              console.log({ idMudhohi, idSapi });
-              console.log(button);
-
-              const url = "/panitLt3/postpone";
-              const data = { idSapi, idMudhohi };
-              const option = {
-                method: "PUT",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify(data),
-              };
-              const result = await fetch(url, option);
-              const statusCode = result.status;
-              const hasil = await result.json();
-              if (statusCode != 200) {
-                console.log(hasil);
-              } else {
-                console.log("berhasil fetch");
-
-                // Temukan elemen modal berdasarkan id mudhohi
-                const modalElement = document.getElementById(
-                  `modalMudhohi${idMudhohi}`
-                );
-
-                // Pastikan modal diakses dengan aman
-                if (modalElement) {
-                  // Jika menggunakan Bootstrap 5 dan modal instance diperlukan
-                  const modalInstance =
-                    bootstrap.Modal.getInstance(modalElement);
-                  if (modalInstance) {
-                    modalInstance.hide(); // Menutup modal dengan Bootstrap
-
-                    // Berikan waktu agar Bootstrap menyelesaikan proses tutup modal
-                    setTimeout(() => {
-                      // Hapus modal element jika perlu
-                      modalElement.classList.remove("show");
-                      modalElement.removeAttribute("aria-modal");
-                      modalElement.style.display = "none";
-
-                      // Hilangkan backdrop
-                      const modalBackdrop =
-                        document.querySelector(".modal-backdrop");
-                      if (modalBackdrop) {
-                        modalBackdrop.remove();
-                      }
-
-                      // Kembalikan scroll pada body
-                      document.body.classList.remove("modal-open");
-                      document.body.style = "";
-
-                      modalInstance.dispose(); // Hapus instance modal
-                    }, 300); // Menunda selama 300ms
-                  }
-                }
-              }
+        // Handler: postpone
+        document.querySelectorAll('.postponeDagingButton').forEach(btn => {
+          btn.addEventListener('click', async e => {
+            e.preventDefault();
+            const { idmudhohi: idMudhohi, idhewan, jenis: jenisDariModal } = btn.dataset;
+            const idHewan = parseInt(idhewan);
+            const res = await fetch('/panitLt3/postpone', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ idSapi: idHewan, idMudhohi, jenis: jenisDariModal })
             });
+            if (res.status === 200) closeModal(`modalMudhohi${idMudhohi}`);
           });
+        });
+      }
+
+      // ─── Helper tutup modal Bootstrap ──────────────────────────────
+      function closeModal(modalId) {
+        const el = document.getElementById(modalId);
+        if (!el) return;
+        const instance = bootstrap.Modal.getInstance(el);
+        if (instance) {
+          instance.hide();
+          setTimeout(() => {
+            el.classList.remove('show');
+            el.removeAttribute('aria-modal');
+            el.style.display = 'none';
+            const backdrop = document.querySelector('.modal-backdrop');
+            if (backdrop) backdrop.remove();
+            document.body.classList.remove('modal-open');
+            document.body.style = '';
+            instance.dispose();
+          }, 300);
         }
-      });
+      }
+
+      // ─── Listen realtime ───────────────────────────────────────────
+      function listenHewan(jenis) {
+        const ref = database.ref(jenis + '/');
+        activeRef = ref;
+        activeListener = ref.on('value', async snapshot => {
+          if (currentTab !== jenis) return;
+          const data = snapshot.val();
+          if (!data) {
+            document.getElementById('explore').innerHTML = `<p class="text-muted">Belum ada data ${jenis}.</p>`;
+            return;
+          }
+          const arr = await transformHewanData(data, jenis);
+          const filtered = arr.filter(h => h.state === 'Siap Dibagikan' || h.state === 'Sedang Dibagikan ke Mudhohi');
+          let mudhohiList = filtered.flatMap(h => h.mudhohi);
+          mudhohiList = mudhohiList.filter(m => !m.isDelivered && !m.isPostponed);
+          updateDataOnPage(mudhohiList, jenis);
+        });
+      }
+
+      // Mulai dengan sapi
+      listenHewan('sapi');
     </script>
   </body>
 </html>

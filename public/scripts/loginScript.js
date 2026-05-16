@@ -16,15 +16,15 @@ submitLogin.addEventListener("click", async (e) => {
   e.preventDefault();
   var username = document.getElementById("usernameInputLogin").value;
   var password = document.getElementById("passwordInputLogin").value;
-  var url = "/auth/login"
-  var data = { username, password }
+  var url = "/auth/login";
+  var data = { username, password };
   const option = {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json'
+      "Content-Type": "application/json",
     },
-    body: JSON.stringify(data)
-  }
+    body: JSON.stringify(data),
+  };
   const result = await fetch(url, option);
   const hasil = await result.json();
   console.log(hasil);
@@ -33,32 +33,26 @@ submitLogin.addEventListener("click", async (e) => {
     if (hasil.user.mudhohi) {
       // mudhohi
       location.assign("/mudhohi");
-    }
-    else {
+    } else {
       if (hasil.user.role == "admin") {
         location.assign("/admin");
-      }
-      else if (hasil.user.role == "panitLt1") {
+      } else if (hasil.user.role == "panitLt1") {
         location.assign("/panitLt1");
-      }
-      else if (hasil.user.role == "panitLt2") {
+      } else if (hasil.user.role == "panitLt2") {
         location.assign("/panitLt2");
-      }
-      else {
+      } else {
         location.assign("/panitLt3");
       }
     }
-  }
-  else {
+  } else {
     // gagal login
     const loginError = document.getElementById("loginError");
     loginError.textContent = hasil.message;
     setTimeout(() => {
       loginError.textContent = "";
-    }, 4000)
+    }, 4000);
   }
-})
-
+});
 
 const submitSignUp = document.getElementById("submitSignUp");
 submitSignUp.addEventListener("click", async (e) => {
@@ -67,109 +61,129 @@ submitSignUp.addEventListener("click", async (e) => {
   var password = document.getElementById("passwordInputSignUp").value;
   var name = document.getElementById("nameInputSignUp").value;
   var role = document.getElementById("role").value;
+
   if (role == "mudhohi") {
     var address = document.getElementById("addressInputSignUp").value;
     var phoneNumber = document.getElementById("phoneNumberInputSignUp").value;
-    var nomorSapi = document.getElementById("nomorSapiInputSignUp").value;
-    // console.log({ username, password, name, role, address, phoneNumber, nomorSapi });
-    var url = "/postMudhohi"
-    var data = { username, password, name, alamat: address, noHP: phoneNumber, noSapi: nomorSapi };
-    const option = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data)
+    var jenisHewan = document.getElementById("jenisHewanSignUp").value;
+
+    if (!jenisHewan) {
+      const signUpError = document.getElementById("signUpError");
+      signUpError.textContent = "Silakan pilih jenis hewan (Sapi atau Kambing)";
+      setTimeout(() => {
+        signUpError.textContent = "";
+      }, 4000);
+      return;
     }
+
+    var data = { username, password, name, alamat: address, noHP: phoneNumber };
+
+    if (jenisHewan === "sapi") {
+      var nomorSapi = document.getElementById("nomorSapiInputSignUp").value;
+      if (!nomorSapi) {
+        const signUpError = document.getElementById("signUpError");
+        signUpError.textContent = "Silakan isi nomor sapi";
+        setTimeout(() => {
+          signUpError.textContent = "";
+        }, 4000);
+        return;
+      }
+      data.noSapi = nomorSapi;
+    } else if (jenisHewan === "kambing") {
+      var nomorKambing = document.getElementById("nomorKambingInputSignUp").value;
+      if (!nomorKambing) {
+        const signUpError = document.getElementById("signUpError");
+        signUpError.textContent = "Silakan isi nomor kambing";
+        setTimeout(() => {
+          signUpError.textContent = "";
+        }, 4000);
+        return;
+      }
+      data.noKambing = nomorKambing;
+    }
+
+    var url = "/postMudhohi";
+    const option = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    };
     const result = await fetch(url, option);
     const hasil = await result.json();
     if (result.status != 200) {
-      // gagal
       const signUpError = document.getElementById("signUpError");
       signUpError.textContent = hasil.message;
       setTimeout(() => {
-        signUpError.textContent = ""
+        signUpError.textContent = "";
       }, 4000);
-    }
-    else {
-      // berhasil
+    } else {
       location.assign("landingPageRegister");
     }
-  }
-  else if (role == "panitia-lantai-1") {
-    var url = "/postPanitLt1"
+  } else if (role == "panitia-lantai-1") {
+    var url = "/postPanitLt1";
     var data = { username, password, name };
     const option = {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(data)
-    }
+      body: JSON.stringify(data),
+    };
     const result = await fetch(url, option);
     const hasil = await result.json();
     if (result.status != 200) {
-      // gagal
       const signUpError = document.getElementById("signUpError");
       signUpError.textContent = hasil.message;
       setTimeout(() => {
-        signUpError.textContent = ""
+        signUpError.textContent = "";
       }, 4000);
-    }
-    else {
-      // berhasil
+    } else {
       location.assign("landingPageRegister");
     }
-  }
-  else if (role == "panitia-lantai-2") {
-    var url = "/postPanitLt2"
+  } else if (role == "panitia-lantai-2") {
+    var url = "/postPanitLt2";
     var data = { username, password, name };
     const option = {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(data)
-    }
+      body: JSON.stringify(data),
+    };
     const result = await fetch(url, option);
     const hasil = await result.json();
     if (result.status != 200) {
-      // gagal
       const signUpError = document.getElementById("signUpError");
       signUpError.textContent = hasil.message;
       setTimeout(() => {
-        signUpError.textContent = ""
+        signUpError.textContent = "";
       }, 4000);
-    }
-    else {
-      // berhasil
+    } else {
       location.assign("landingPageRegister");
     }
-  }
-  else {
-    // panit-lantai-3
-    var url = "/postPanitLt3"
+  } else {
+    // panitia-lantai-3
+    var url = "/postPanitLt3";
     var data = { username, password, name };
     const option = {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(data)
-    }
+      body: JSON.stringify(data),
+    };
     const result = await fetch(url, option);
     const hasil = await result.json();
     if (result.status != 200) {
-      // gagal
       const signUpError = document.getElementById("signUpError");
       signUpError.textContent = hasil.message;
       setTimeout(() => {
-        signUpError.textContent = ""
+        signUpError.textContent = "";
       }, 4000);
-    }
-    else {
-      // berhasil
+    } else {
       location.assign("landingPageRegister");
     }
   }
-})
+});

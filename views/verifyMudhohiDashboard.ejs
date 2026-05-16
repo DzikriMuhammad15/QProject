@@ -165,9 +165,10 @@
       const candidateUsersRef = database.ref("userCandidate/");
 
       // Fungsi untuk memperbarui konten halaman
+// Fungsi untuk memperbarui konten halaman
       function updateDataOnPage(candidateUser) {
         const exploreSection = document.getElementById("explore");
-        exploreSection.innerHTML = ""; // Kosongkan kontainer
+        exploreSection.innerHTML = "";
         const body = document.querySelector("body");
 
         for (let index = 0; index < Math.floor(candidateUser.length / 3) + 1; index++) {
@@ -176,40 +177,49 @@
 
           for (let i = index * 3; i < index * 3 + 3; i++) {
             if (i < candidateUser.length) {
+              const cu = candidateUser[i];
               const projectBox = document.createElement("div");
               projectBox.className = "project-box";
               projectBox.setAttribute("data-bs-toggle", "modal");
-              projectBox.setAttribute(
-                "data-bs-target",
-                `#modalCandidateUser${candidateUser[i].idUserCandidate}`
-              );
+              projectBox.setAttribute("data-bs-target", `#modalCandidateUser${cu.idUserCandidate}`);
 
+              // Tampilkan ikon sesuai jenis hewan
+              const iconClass = cu.noKambing ? 'fa-solid fa-hippo' : 'fa-solid fa-cow';
+              const iconColor = cu.noKambing ? '#82C57A' : '#74C0FC';
               projectBox.innerHTML = `
-                <i class="fa-solid fa-cow" style="color: #74C0FC;"></i>
-                <h3>${candidateUser[i].username}</h3>
-                <label>${candidateUser[i].name}</label>
+                <i class="${iconClass}" style="color: ${iconColor};"></i>
+                <h3>${cu.username}</h3>
+                <label>${cu.name}</label>
               `;
               projectContainer.appendChild(projectBox);
-              // buat modal
+
               const modal = document.createElement("div");
               modal.className = "modal fade";
-              modal.setAttribute("id", `modalCandidateUser${candidateUser[i].idUserCandidate}`);
+              modal.setAttribute("id", `modalCandidateUser${cu.idUserCandidate}`);
               modal.setAttribute("tabindex", "-1");
               modal.setAttribute("aria-labelledby", "exampleModalLabel");
               modal.setAttribute("aria-hidden", "true");
+
+              // Info hewan
+              let hewanInfo = '';
+              if (cu.noSapi) hewanInfo += `<p>No Sapi: <b>${cu.noSapi}</b></p>`;
+              if (cu.noKambing) hewanInfo += `<p>No Kambing: <b>${cu.noKambing}</b></p>`;
+              if (!cu.noSapi && !cu.noKambing) hewanInfo = `<p class="text-muted">Tidak ada hewan terhubung</p>`;
+
               var temp = `<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
           <div class="modal-header">
-            <h1 class="modal-title fs-5" id="exampleModalLabel">${candidateUser[i].username}</h1>
+            <h1 class="modal-title fs-5" id="exampleModalLabel">${cu.username}</h1>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
             <div class="modal-body">
-              <p>name : ${candidateUser[i].name}</p>
-              <p>role : ${candidateUser[i].role}</p>
+              <p>name : ${cu.name}</p>
+              <p>role : ${cu.role}</p>
+              ${hewanInfo}
               <p><b>Are you sure want to verify this user?</b></p>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-              <button type="button" class="btn btn-primary verifyButton" data-id="${candidateUser[i].idUserCandidate}" data-idmudhohi="${candidateUser[i].idMudhohi}" >Yes</button>
+              <button type="button" class="btn btn-primary verifyButton" data-id="${cu.idUserCandidate}" data-idmudhohi="${cu.idMudhohi}" >Yes</button>
             </div>
             `;
               temp += `</div>
@@ -224,6 +234,33 @@
         }
       }
 
+      async function transformData(data) {
+        const result = [];
+        for (const idUserCandidate in data) {
+          const userCandidate = data[idUserCandidate];
+          // Ambil detail mudhohiCandidate untuk mendapatkan noSapi/noKambing
+          let noSapi = null, noKambing = null;
+          if (userCandidate.mudhohiId) {
+            const mudhohiCandidateSnap = await database.ref('mudhohiCandidate/' + userCandidate.mudhohiId).once('value');
+            const mc = mudhohiCandidateSnap.val();
+            if (mc) {
+              noSapi = mc.noSapi || null;
+              noKambing = mc.noKambing || null;
+            }
+          }
+          result.push({
+            idUserCandidate,
+            name: userCandidate.name,
+            username: userCandidate.username,
+            role: userCandidate.role,
+            idMudhohi: userCandidate.mudhohiId,
+            noSapi,
+            noKambing
+          });
+        }
+        return result;
+      }
+      
       async function transformData(data) {
         const result = [];
 

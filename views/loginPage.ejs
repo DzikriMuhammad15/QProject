@@ -6,29 +6,28 @@
     <link rel="stylesheet" href="/stylesheets/loginStyle.css" />
     <title>Sign in & Sign up Form</title>
     <style>
-      /* Style adjustments for smaller input fields and tighter spacing */
       .input-field {
         display: flex;
         align-items: center;
-        margin-bottom: 1rem; /* Reduced margin for tighter spacing */
+        margin-bottom: 1rem;
         position: relative;
       }
 
       .input-field i {
         position: absolute;
-        margin-left: 0.75rem; /* Adjusted icon margin */
+        margin-left: 0.75rem;
         color: #acacac;
       }
 
       .input-field input,
       .input-field select {
-        width: 90%; /* Reduced width to make input fields smaller */
-        padding: 0.5rem 1rem 0.5rem 2.5rem; /* Adjusted padding for smaller inputs */
+        width: 90%;
+        padding: 0.5rem 1rem 0.5rem 2.5rem;
         border: none;
         border-radius: 2.5rem;
         background-color: #f0f0f0;
         color: #333;
-        font-size: 0.9rem; /* Slightly smaller font size */
+        font-size: 0.9rem;
         margin-left: 0.5rem;
       }
 
@@ -120,13 +119,36 @@
                   id="phoneNumberInputSignUp"
                 />
               </div>
+              <!-- Pilihan jenis hewan -->
               <div class="input-field">
-                <i class="fas fa-phone"></i>
-                <input
-                  type="number"
-                  placeholder="Nomor Sapi"
-                  id="nomorSapiInputSignUp"
-                />
+                <i class="fas fa-paw"></i>
+                <select id="jenisHewanSignUp" class="input" onchange="handleJenisHewanChange()">
+                  <option value="">Pilih Jenis Hewan</option>
+                  <option value="sapi">Sapi</option>
+                  <option value="kambing">Kambing</option>
+                </select>
+              </div>
+              <!-- Field Nomor Sapi (tampil jika pilih Sapi) -->
+              <div id="nomor-sapi-field" style="display: none">
+                <div class="input-field">
+                  <i class="fas fa-hashtag"></i>
+                  <input
+                    type="number"
+                    placeholder="Nomor Sapi"
+                    id="nomorSapiInputSignUp"
+                  />
+                </div>
+              </div>
+              <!-- Field Nomor Kambing (tampil jika pilih Kambing) -->
+              <div id="nomor-kambing-field" style="display: none">
+                <div class="input-field">
+                  <i class="fas fa-hashtag"></i>
+                  <input
+                    type="number"
+                    placeholder="Nomor Kambing"
+                    id="nomorKambingInputSignUp"
+                  />
+                </div>
               </div>
             </div>
             <div class="error" id="signUpError"></div>
@@ -168,7 +190,6 @@
 
     <script src="/scripts/loginScript.js"></script>
 
-    <!-- JavaScript to handle role selection -->
     <script>
       function handleRoleChange() {
         var role = document.getElementById("role").value;
@@ -178,6 +199,29 @@
           mudhohiFields.style.display = "block";
         } else {
           mudhohiFields.style.display = "none";
+          // Reset jenis hewan saat role berubah
+          document.getElementById("jenisHewanSignUp").value = "";
+          document.getElementById("nomor-sapi-field").style.display = "none";
+          document.getElementById("nomor-kambing-field").style.display = "none";
+        }
+      }
+
+      function handleJenisHewanChange() {
+        var jenisHewan = document.getElementById("jenisHewanSignUp").value;
+        var nomorSapiField = document.getElementById("nomor-sapi-field");
+        var nomorKambingField = document.getElementById("nomor-kambing-field");
+
+        if (jenisHewan === "sapi") {
+          nomorSapiField.style.display = "block";
+          nomorKambingField.style.display = "none";
+          document.getElementById("nomorKambingInputSignUp").value = "";
+        } else if (jenisHewan === "kambing") {
+          nomorKambingField.style.display = "block";
+          nomorSapiField.style.display = "none";
+          document.getElementById("nomorSapiInputSignUp").value = "";
+        } else {
+          nomorSapiField.style.display = "none";
+          nomorKambingField.style.display = "none";
         }
       }
     </script>

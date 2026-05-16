@@ -90,7 +90,8 @@
                 <table>
                   <thead>
                     <tr>
-                      <th>No Sapi</th>
+                      <th>Jenis Hewan</th>
+                      <th>No Hewan</th>
                       <th>Status</th>
                       <th>Bukti</th>
                     </tr>
@@ -216,72 +217,72 @@
         const database = firebase.database();
         const currentMudhohi = <%- JSON.stringify(currentMudhohi) %>;
         const currentUser = <%- JSON.stringify(currentUser) %>;
-        const mudhohiId= currentUser.mudhohiId;
+        const mudhohiId = currentUser.mudhohiId;
 
-        // Referensi ke path data sapi
-        const sapiRef = database.ref(`sapi/${currentMudhohi.noSapi}/`);
-
-        async function transformData(data) {
-          const returnVal = {
-            state: "",
-            bukti: ""
+        // ─── Helper: transform data hewan (sapi atau kambing) ───────
+        function transformData(data, mudhohiId) {
+          const returnVal = { state: '', bukti: '' };
+          const mudhohiData = data[mudhohiId];
+          if (!mudhohiData) {
+            returnVal.state = data.state || '-';
+            return returnVal;
           }
-          if(!data[mudhohiId].isDelivered && !data[mudhohiId].isPostponed){
-            // belum ke tahap pembagian
-            returnVal.state = data.state;
+          if (!mudhohiData.isDelivered && !mudhohiData.isPostponed) {
+            returnVal.state = data.state || '-';
+          } else if (!mudhohiData.isDelivered && mudhohiData.isPostponed) {
+            returnVal.state = 'Ditunda';
+          } else if (mudhohiData.isDelivered && !mudhohiData.isPostponed) {
+            returnVal.state = 'Sudah Dikirimkan';
+            returnVal.bukti = mudhohiData.bukti || '';
           }
-          else if(!data[mudhohiId].isDelivered && data[mudhohiId].isPostponed){
-            // sudah dibagikan namun postpone
-            returnVal.state = "Ditunda";
-          }
-          else if(data[mudhohiId].isDelivered && !data[mudhohiId].isPostponed){
-            returnVal.state = "Sudah Dikirimkan";
-            returnVal.bukti = data[mudhohiId].bukti;
-          }
-          return returnVal
+          return returnVal;
         }
 
-        function updateDataOnPage(data){
-          const bodyTabel = document.getElementById("bodyTabel");
-          var tr = document.createElement("tr");
-          tr.setAttribute("id", currentMudhohi.noSapi);
-          const onPageTr = document.getElementById(currentMudhohi.noSapi);
-          if(!onPageTr){
-            // sudah ada tr di dalam page
-            console.log(data);
-            var TrInnerHtml =`
-            <td>
-              <p>${currentMudhohi.noSapi}</p>
-              </td>
-              <td id="state-${currentMudhohi.noSapi}">${data.state}</td>
-              `
-              if(data.state == "Sudah Dikirimkan"){
-            TrInnerHtml += `         <td>
-              <img src="${data.bukti}" id="foto-${currentMudhohi.noSapi}" style="max-width: 300px; height: auto; border-radius: 10px;">
-              </td>`
+        // ─── Helper: update atau insert baris tabel ─────────────────
+        function updateRow(rowId, jenis, noHewan, data) {
+          const bodyTabel = document.getElementById('bodyTabel');
+          let tr = document.getElementById(rowId);
+          if (!tr) {
+            tr = document.createElement('tr');
+            tr.id = rowId;
+            bodyTabel.appendChild(tr);
+          }
+          let html = `
+            <td><span class="badge bg-${jenis === 'sapi' ? 'primary' : 'success'}">${jenis.toUpperCase()}</span></td>
+            <td>${noHewan}</td>
+            <td id="state-${rowId}">${data.state}</td>
+          `;
+          if (data.state === 'Sudah Dikirimkan' && data.bukti) {
+            html += `<td><img src="${data.bukti}" id="foto-${rowId}" style="max-width:300px;height:auto;border-radius:10px;"></td>`;
+          } else {
+            html += `<td id="foto-${rowId}">-</td>`;
+          }
+          tr.innerHTML = html;
+        }
+
+        // ─── Listen sapi (jika mudhohi punya noSapi) ────────────────
+        if (currentMudhohi.noSapi) {
+          const sapiRef = database.ref(`sapi/${currentMudhohi.noSapi}/`);
+          sapiRef.on('value', snapshot => {
+            const data = snapshot.val();
+            if (data) {
+              const formatted = transformData(data, mudhohiId);
+              updateRow(`sapi-${currentMudhohi.noSapi}`, 'sapi', currentMudhohi.noSapi, formatted);
             }
-
-          tr.innerHTML = TrInnerHtml;
-          bodyTabel.appendChild(tr);
-
+          });
         }
-        else{
-          // belum ada tr di page untuk sapi yang bersesuaian pada currentMudhohi
-          document.getElementById(`state-${currentMudhohi.noSapi}`).innerHTML = data.state;
-          document.getElementById(`foto-${currentMudhohi.noSapi}`).src = data.bukti
-        }
-      }
 
-        // Listen untuk perubahan data
-        sapiRef.on("value", async (snapshot) => {
-          const data = snapshot.val();
-          console.log({datasebelumFormat: data});
-          if (data) {
-            const formattedData = await transformData(data);
-            console.log(formattedData);
-            updateDataOnPage(formattedData);
-          }
-        });
+        // ─── Listen kambing (jika mudhohi punya noKambing) ──────────
+        if (currentMudhohi.noKambing) {
+          const kambingRef = database.ref(`kambing/${currentMudhohi.noKambing}/`);
+          kambingRef.on('value', snapshot => {
+            const data = snapshot.val();
+            if (data) {
+              const formatted = transformData(data, mudhohiId);
+              updateRow(`kambing-${currentMudhohi.noKambing}`, 'kambing', currentMudhohi.noKambing, formatted);
+            }
+          });
+        }
     </script>
   </body>
 </html>
