@@ -10,8 +10,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <link rel="stylesheet" href="/stylesheets/loading.css" />
   </head>
   <body>
+  <div id="loadingOverlay"><div class="loading-spinner"></div><p class="loading-text">Memproses...</p></div>
+  <script src="/scripts/loading.js"></script>
     <section id="sidebar">
       <a href="#" class="brand"><i class="fa-solid fa-star-and-crescent icon" style="color: #74c0fc"></i> Qurban</a>
       <ul class="side-menu">
@@ -168,15 +171,17 @@
         document.querySelectorAll('.sembelihHewanButton').forEach(btn => {
           btn.addEventListener('click', async e => {
             e.preventDefault();
-            const idHewan = btn.dataset.id;
-            const jenisDari = btn.dataset.jenis;
-            const result = await fetch('/panitLt2/pemrosesanDaging', {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ idSapi: idHewan, jenis: jenisDari })
+            await withLoading(async () => {
+              const idHewan = btn.dataset.id;
+              const jenisDari = btn.dataset.jenis;
+              const result = await fetch('/panitLt2/pemrosesanDaging', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idSapi: idHewan, jenis: jenisDari })
+              });
+              if (result.status === 200) { closeModal(`modalHewan${jenisDari}${idHewan}`); location.reload(); }
+              else { console.log(await result.json()); }
             });
-            if (result.status === 200) { closeModal(`modalHewan${jenisDari}${idHewan}`); }
-            else { console.log(await result.json()); }
           });
         });
       }

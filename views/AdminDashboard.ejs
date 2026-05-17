@@ -13,8 +13,11 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <!-- SheetJS untuk generate Excel di client -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="/stylesheets/loading.css" />
   </head>
   <body>
+  <div id="loadingOverlay"><div class="loading-spinner"></div><p class="loading-text">Memproses...</p></div>
+  <script src="/scripts/loading.js"></script>
     <!-- SIDEBAR -->
     <section id="sidebar">
       <a href="#" class="brand"><i class="fa-solid fa-star-and-crescent icon" style="color: #74c0fc"></i> Qurban</a>
@@ -291,34 +294,22 @@
           const noSapi = parseInt(document.getElementById("noSapiInput").value);
           const addSapiError = document.getElementById("addSapiError");
           if (isNaN(noSapi)) { addSapiError.textContent = "Masukkan nomor sapi yang valid"; return; }
-          const result = await fetch("/admin/postSapi", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ foto: "", noSapi, state: "Belum Disembelih" })
-          });
-          const statusCode = result.status;
-          const hasil = await result.json();
-          if (statusCode !== 200) {
-            addSapiError.textContent = hasil.message;
-          } else {
-            addSapiError.innerHTML = "";
-            document.getElementById("noSapiInput").value = "";
-            const modalEl = document.getElementById("addSapiModal");
-            const modalInstance = bootstrap.Modal.getInstance(modalEl);
-            if (modalInstance) {
-              modalInstance.hide();
-              setTimeout(() => {
-                modalEl.classList.remove("show");
-                modalEl.removeAttribute("aria-modal");
-                modalEl.style.display = "none";
-                const backdrop = document.querySelector(".modal-backdrop");
-                if (backdrop) backdrop.remove();
-                document.body.classList.remove("modal-open");
-                document.body.style = "";
-                modalInstance.dispose();
-              }, 300);
+          await withLoading(async () => {
+            const result = await fetch("/admin/postSapi", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ foto: "", noSapi, state: "Belum Disembelih" })
+            });
+            const statusCode = result.status;
+            const hasil = await result.json();
+            if (statusCode !== 200) {
+              addSapiError.textContent = hasil.message;
+            } else {
+              addSapiError.innerHTML = "";
+              document.getElementById("noSapiInput").value = "";
+              location.reload();
             }
-          }
+          });
         };
       });
 
@@ -332,43 +323,30 @@
           const noKambing = parseInt(document.getElementById("noKambingInput").value);
           const addKambingError = document.getElementById("addKambingError");
           if (isNaN(noKambing)) { addKambingError.textContent = "Masukkan nomor kambing yang valid"; return; }
-          const result = await fetch("/admin/postKambing", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ foto: "", noKambing, state: "Belum Disembelih" })
-          });
-          const statusCode = result.status;
-          const hasil = await result.json();
-          if (statusCode !== 200) {
-            addKambingError.textContent = hasil.message;
-          } else {
-            addKambingError.innerHTML = "";
-            document.getElementById("noKambingInput").value = "";
-            const modalEl = document.getElementById("addKambingModal");
-            const modalInstance = bootstrap.Modal.getInstance(modalEl);
-            if (modalInstance) {
-              modalInstance.hide();
-              setTimeout(() => {
-                modalEl.classList.remove("show");
-                modalEl.removeAttribute("aria-modal");
-                modalEl.style.display = "none";
-                const backdrop = document.querySelector(".modal-backdrop");
-                if (backdrop) backdrop.remove();
-                document.body.classList.remove("modal-open");
-                document.body.style = "";
-                modalInstance.dispose();
-              }, 300);
+          await withLoading(async () => {
+            const result = await fetch("/admin/postKambing", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ foto: "", noKambing, state: "Belum Disembelih" })
+            });
+            const statusCode = result.status;
+            const hasil = await result.json();
+            if (statusCode !== 200) {
+              addKambingError.textContent = hasil.message;
+            } else {
+              addKambingError.innerHTML = "";
+              document.getElementById("noKambingInput").value = "";
+              location.reload();
             }
-          }
+          });
         };
       });
 
       document.getElementById("formAddKambing").addEventListener("submit", e => e.preventDefault());
 
       // =============================================================
-      // DOWNLOAD EXCEL — satu baris per mudhohi
-      // Kolom: Nama Mudhohi, Alamat, No HP, Jenis Hewan, No Hewan,
-      //        Status Pengiriman, Bukti Pengiriman (hyperlink)
+      // DOWNLOAD SNAPSHOT EXCEL
+      // Gambar (bukti) dimasukkan sebagai hyperlink URL di sel Excel
       // =============================================================
       async function downloadExcel() {
         const btn = document.getElementById("buttonDownloadExcel");
@@ -379,62 +357,65 @@
           const response = await fetch("/admin/snapshot");
           if (!response.ok) throw new Error("Gagal mengambil data snapshot");
           const json = await response.json();
-          // Hanya baris yang punya mudhohi (idMudhohi tidak kosong)
-          const rows = json.data.filter(r => r.idMudhohi !== '');
+          const rows = json.data;
 
+          // Header kolom
           const headers = [
-            "Nama Mudhohi", "Alamat", "No HP",
-            "Jenis Hewan", "No Hewan",
-            "Status Pengiriman", "Bukti Pengiriman"
+            "Jenis Hewan", "No Hewan", "State", "Foto Hewan (URL)",
+            "ID Mudhohi", "Nama Mudhohi", "Alamat", "No HP",
+            "Sudah Dikirim?", "Tertunda?", "Bukti (URL)", "Username Pengirim"
           ];
 
-          const wb = XLSX.utils.book_new();
           const wsData = [headers];
-
           rows.forEach(row => {
-            let statusPengiriman;
-            if (row.isPostponed === 'Ya') {
-              statusPengiriman = 'Ditunda';
-            } else if (row.isDelivered === 'Ya') {
-              statusPengiriman = 'Sudah Dikirim';
-            } else {
-              statusPengiriman = 'Belum Dikirim';
-            }
-
             wsData.push([
+              row.jenis,
+              row.noHewan,
+              row.state,
+              row.fotoHewan,
+              row.idMudhohi,
               row.namaMudhohi,
               row.alamat,
               row.noHP,
-              row.jenis,
-              row.noHewan,
-              statusPengiriman,
-              row.bukti || ''   // sementara teks biasa; diganti hyperlink di bawah
+              row.isDelivered,
+              row.isPostponed,
+              row.bukti,
+              row.usernamePengirim
             ]);
           });
 
+          const wb = XLSX.utils.book_new();
           const ws = XLSX.utils.aoa_to_sheet(wsData);
 
-          // Lebar kolom: Nama, Alamat, NoHP, Jenis, NoHewan, Status, Bukti
+          // Lebar kolom otomatis
           ws['!cols'] = [
-            { wch: 24 }, { wch: 32 }, { wch: 16 },
-            { wch: 12 }, { wch: 10 },
-            { wch: 18 }, { wch: 40 }
+            { wch: 12 }, { wch: 10 }, { wch: 28 }, { wch: 40 },
+            { wch: 28 }, { wch: 20 }, { wch: 30 }, { wch: 15 },
+            { wch: 14 }, { wch: 10 }, { wch: 40 }, { wch: 20 }
           ];
 
-          // Kolom Bukti Pengiriman (index 6) → hyperlink jika berisi URL
+          // Buat hyperlink untuk kolom Foto Hewan (kolom D, index 3) dan Bukti (kolom K, index 10)
           rows.forEach((row, i) => {
-            const r = i + 1; // index 0 = header
+            const rowNum = i + 2; // baris ke-2 dst (baris 1 = header)
+
+            // Foto Hewan
+            if (row.fotoHewan && row.fotoHewan.startsWith('http')) {
+              const cellRef = XLSX.utils.encode_cell({ r: rowNum - 1, c: 3 });
+              ws[cellRef] = { v: row.fotoHewan, l: { Target: row.fotoHewan, Tooltip: "Lihat foto hewan" } };
+            }
+
+            // Bukti pengiriman
             if (row.bukti && row.bukti.startsWith('http')) {
-              const cellRef = XLSX.utils.encode_cell({ r, c: 6 });
-              ws[cellRef] = { t: 's', v: 'Lihat Bukti', l: { Target: row.bukti, Tooltip: "Lihat bukti pengiriman" } };
+              const cellRef = XLSX.utils.encode_cell({ r: rowNum - 1, c: 10 });
+              ws[cellRef] = { v: row.bukti, l: { Target: row.bukti, Tooltip: "Lihat bukti pengiriman" } };
             }
           });
 
-          XLSX.utils.book_append_sheet(wb, ws, "Data Mudhohi");
+          XLSX.utils.book_append_sheet(wb, ws, "Snapshot Qurban");
 
           const now = new Date();
           const timestamp = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
-          XLSX.writeFile(wb, `data_mudhohi_${timestamp}.xlsx`);
+          XLSX.writeFile(wb, `snapshot_qurban_${timestamp}.xlsx`);
         } catch (err) {
           alert("Gagal download Excel: " + err.message);
         } finally {

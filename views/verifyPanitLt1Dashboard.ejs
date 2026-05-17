@@ -37,8 +37,11 @@
     <!-- Firebase SDK v8 -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <link rel="stylesheet" href="/stylesheets/loading.css" />
   </head>
   <body>
+  <div id="loadingOverlay"><div class="loading-spinner"></div><p class="loading-text">Memproses...</p></div>
+  <script src="/scripts/loading.js"></script>
     <!-- SIDEBAR -->
     <section id="sidebar">
       <a href="#" class="brand"
@@ -276,49 +279,16 @@
                     },
                     body: JSON.stringify(data),
                   };
-                  const result = await fetch(url, option);
-                  const statusCode = result.status;
-                  const hasil = await result.json();
-                  if (statusCode != 200) {
-                    console.log(hasil);
-                  } else {
-                    console.log("berhasil fetch");
-                    // Temukan elemen modal berdasarkan id sapi
-                    const modalElement = document.getElementById(
-                      `modalCandidateUser${idUserCandidate}`
-                    );
-
-                    // Pastikan modal diakses dengan aman
-                    if (modalElement) {
-                      // Jika menggunakan Bootstrap 5 dan modal instance diperlukan
-                      const modalInstance =
-                        bootstrap.Modal.getInstance(modalElement);
-                      if (modalInstance) {
-                        modalInstance.hide(); // Menutup modal dengan Bootstrap
-
-                        // Berikan waktu agar Bootstrap menyelesaikan proses tutup modal
-                        setTimeout(() => {
-                          // Hapus modal element jika perlu
-                          modalElement.classList.remove("show");
-                          modalElement.removeAttribute("aria-modal");
-                          modalElement.style.display = "none";
-
-                          // Hilangkan backdrop
-                          const modalBackdrop =
-                            document.querySelector(".modal-backdrop");
-                          if (modalBackdrop) {
-                            modalBackdrop.remove();
-                          }
-
-                          // Kembalikan scroll pada body
-                          document.body.classList.remove("modal-open");
-                          document.body.style = "";
-
-                          modalInstance.dispose(); // Hapus instance modal
-                        }, 300); // Menunda selama 300ms
-                      }
+                  await withLoading(async () => {
+                    const result = await fetch(url, option);
+                    const statusCode = result.status;
+                    const hasil = await result.json();
+                    if (statusCode != 200) {
+                      console.log(hasil);
+                    } else {
+                      location.reload();
                     }
-                  }
+                  });
                 });
               });
             });

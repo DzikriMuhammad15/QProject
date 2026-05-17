@@ -11,8 +11,11 @@
     <!-- Firebase SDK v8 (Realtime Database SAJA - tanpa Storage) -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <link rel="stylesheet" href="/stylesheets/loading.css" />
   </head>
   <body>
+  <div id="loadingOverlay"><div class="loading-spinner"></div><p class="loading-text">Memproses...</p></div>
+  <script src="/scripts/loading.js"></script>
     <section id="sidebar">
       <a href="#" class="brand"><i class="fa-solid fa-star-and-crescent icon" style="color: #74c0fc"></i> Qurban</a>
       <ul class="side-menu">
@@ -254,6 +257,7 @@
 
             try {
               btn.disabled = true;
+              showLoading();
               statusEl.textContent = 'Mengupload gambar ke Cloudinary...';
               statusEl.className = 'text-muted small';
 
@@ -275,14 +279,14 @@
               });
               if (res.status !== 200) throw new Error((await res.json()).message);
 
-              statusEl.textContent = 'Berhasil dikirim!';
-              statusEl.className = 'text-success small';
-              setTimeout(() => closeModal(`modalMudhohiUpload${idMudhohi}`), 500);
+              // Sukses: overlay tetap tampil sampai reload selesai
+              location.reload();
             } catch (err) {
+              // Error: sembunyikan overlay agar user bisa coba lagi
+              hideLoading();
+              btn.disabled = false;
               statusEl.textContent = 'Error: ' + err.message;
               statusEl.className = 'text-danger small';
-            } finally {
-              btn.disabled = false;
             }
           });
         });
@@ -291,14 +295,16 @@
         document.querySelectorAll('.postponeDagingButton').forEach(btn => {
           btn.addEventListener('click', async e => {
             e.preventDefault();
-            const { idmudhohi: idMudhohi, idhewan, jenis: jenisDariModal } = btn.dataset;
-            const idHewan = parseInt(idhewan);
-            const res = await fetch('/panitLt3/postpone', {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ idSapi: idHewan, idMudhohi, jenis: jenisDariModal })
+            await withLoading(async () => {
+              const { idmudhohi: idMudhohi, idhewan, jenis: jenisDariModal } = btn.dataset;
+              const idHewan = parseInt(idhewan);
+              const res = await fetch('/panitLt3/postpone', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idSapi: idHewan, idMudhohi, jenis: jenisDariModal })
+              });
+              if (res.status === 200) { closeModal(`modalMudhohi${idMudhohi}`); location.reload(); }
             });
-            if (res.status === 200) closeModal(`modalMudhohi${idMudhohi}`);
           });
         });
       }
