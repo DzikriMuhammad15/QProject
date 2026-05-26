@@ -227,53 +227,53 @@
         }
       }
 
+      // ── Cache helper: fetch mudhohis + users SEKALI, lookup dari map ──
+      async function fetchMudhohiCache() {
+        const [mudhohisSnap, usersSnap] = await Promise.all([
+          database.ref("mudhohis/").once("value"),
+          database.ref("users/").once("value")
+        ]);
+        const mudhohisData = mudhohisSnap.val() || {};
+        const usersData    = usersSnap.val() || {};
+        const mudhohiNameMap = {};
+        for (const uid in usersData) {
+          const u = usersData[uid];
+          if (u.mudhohiId) mudhohiNameMap[u.mudhohiId] = u.name || null;
+        }
+        return { mudhohisData, mudhohiNameMap };
+      }
+
       async function transformHewan(sapiData, kambingData) {
         const result = [];
-
-        // Proses sapi
+        const { mudhohisData, mudhohiNameMap } = await fetchMudhohiCache();
         if (sapiData) {
           for (const idSapi in sapiData) {
             const sapi = sapiData[idSapi];
             const obj = { idHewan: idSapi, jenis: 'sapi', state: sapi.state, mudhohi: [] };
             for (const key in sapi) {
               if (key !== 'foto' && key !== 'state' && typeof sapi[key] === 'object') {
-                const mudhohiObj = await database.ref("mudhohis/" + key).once("value").then(s => s.val());
-                const userObj = await database.ref("users/").orderByChild("mudhohiId").equalTo(key).once("value").then(s => {
-                  const d = s.val();
-                  if (d) { const k = Object.keys(d)[0]; return d[k].name; }
-                  return null;
-                });
-                obj.mudhohi.push({ idMudhohi: key, ...mudhohiObj, name: userObj });
+                obj.mudhohi.push({ idMudhohi: key, ...(mudhohisData[key] || {}), name: mudhohiNameMap[key] || null });
               }
             }
             result.push(obj);
           }
         }
-
-        // Proses kambing
         if (kambingData) {
           for (const idKambing in kambingData) {
             const kambing = kambingData[idKambing];
             const obj = { idHewan: idKambing, jenis: 'kambing', state: kambing.state, mudhohi: [] };
             for (const key in kambing) {
               if (key !== 'foto' && key !== 'state' && typeof kambing[key] === 'object') {
-                const mudhohiObj = await database.ref("mudhohis/" + key).once("value").then(s => s.val());
-                const userObj = await database.ref("users/").orderByChild("mudhohiId").equalTo(key).once("value").then(s => {
-                  const d = s.val();
-                  if (d) { const k = Object.keys(d)[0]; return d[k].name; }
-                  return null;
-                });
-                obj.mudhohi.push({ idMudhohi: key, ...mudhohiObj, name: userObj });
+                obj.mudhohi.push({ idMudhohi: key, ...(mudhohisData[key] || {}), name: mudhohiNameMap[key] || null });
               }
             }
             result.push(obj);
           }
         }
-
         return result;
       }
 
-      // Simpan data realtime di variabel global
+            // Simpan data realtime di variabel global
       let latestSapiData = null;
       let latestKambingData = null;
 

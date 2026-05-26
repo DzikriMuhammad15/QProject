@@ -24,9 +24,26 @@ async function isKambingAvailableById(kambingId) {
     return !snapshot.exists();
 }
 
+// Helper: ambil semua mudhohis dan users sekaligus, kembalikan sebagai map
+async function fetchMudhohiMaps() {
+    const [mudhohisSnap, usersSnap] = await Promise.all([
+        database.ref('mudhohis').once('value'),
+        database.ref('users').once('value')
+    ]);
+    const mudhohisData = mudhohisSnap.val() || {};
+    const usersData    = usersSnap.val() || {};
+    const mudhohiNameMap = {};
+    for (const uid in usersData) {
+        const u = usersData[uid];
+        if (u.mudhohiId) mudhohiNameMap[u.mudhohiId] = u.name || '';
+    }
+    return { mudhohisData, mudhohiNameMap };
+}
+
 // Transformasi data sapi (dengan informasi mudhohi)
-async function transformData(data) {
+async function transformData(data, mudhohisCache) {
     const result = [];
+    const mudhohisData = mudhohisCache || (await fetchMudhohiMaps()).mudhohisData;
     for (const idSapi in data) {
         const sapi = data[idSapi];
         const sapiObj = {
@@ -38,8 +55,7 @@ async function transformData(data) {
         };
         for (const key in sapi) {
             if (key !== 'foto' && key !== 'state' && typeof sapi[key] === 'object') {
-                const mudhohiObj = await MudhohiModel.getMudhohiById(key);
-                sapiObj.mudhohi.push({ idMudhohi: key, ...mudhohiObj });
+                sapiObj.mudhohi.push({ idMudhohi: key, ...(mudhohisData[key] || {}) });
             }
         }
         result.push(sapiObj);
@@ -48,8 +64,9 @@ async function transformData(data) {
 }
 
 // Transformasi data kambing (dengan informasi mudhohi)
-async function transformKambingData(data) {
+async function transformKambingData(data, mudhohisCache) {
     const result = [];
+    const mudhohisData = mudhohisCache || (await fetchMudhohiMaps()).mudhohisData;
     for (const idKambing in data) {
         const kambing = data[idKambing];
         const kambingObj = {
@@ -61,8 +78,7 @@ async function transformKambingData(data) {
         };
         for (const key in kambing) {
             if (key !== 'foto' && key !== 'state' && typeof kambing[key] === 'object') {
-                const mudhohiObj = await MudhohiModel.getMudhohiById(key);
-                kambingObj.mudhohi.push({ idMudhohi: key, ...mudhohiObj });
+                kambingObj.mudhohi.push({ idMudhohi: key, ...(mudhohisData[key] || {}) });
             }
         }
         result.push(kambingObj);
@@ -73,10 +89,10 @@ async function transformKambingData(data) {
 // ! REALISASI
 module.exports.getAdminMain = async (req, res) => {
     const currentUser = res.locals.user;
-    const sapi = await SapiModel.getAllSapi();
-    const kambing = await KambingModel.getAllKambing();
-    const resultSapi = sapi ? await transformData(sapi) : [];
-    const resultKambing = kambing ? await transformKambingData(kambing) : [];
+    const [sapi, kambing] = await Promise.all([SapiModel.getAllSapi(), KambingModel.getAllKambing()]);
+    const { mudhohisData } = await fetchMudhohiMaps();
+    const resultSapi = sapi ? await transformData(sapi, mudhohisData) : [];
+    const resultKambing = kambing ? await transformKambingData(kambing, mudhohisData) : [];
     const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
     res.render("AdminDashboard", {
         sapi: resultSapi,
@@ -88,40 +104,40 @@ module.exports.getAdminMain = async (req, res) => {
 
 module.exports.getVerifyPanitLt1Dashboard = async (req, res) => {
     const currentUser = res.locals.user;
-    const sapi = await SapiModel.getAllSapi();
-    const kambing = await KambingModel.getAllKambing();
-    const resultSapi = sapi ? await transformData(sapi) : [];
-    const resultKambing = kambing ? await transformKambingData(kambing) : [];
+    const [sapi, kambing] = await Promise.all([SapiModel.getAllSapi(), KambingModel.getAllKambing()]);
+    const { mudhohisData } = await fetchMudhohiMaps();
+    const resultSapi = sapi ? await transformData(sapi, mudhohisData) : [];
+    const resultKambing = kambing ? await transformKambingData(kambing, mudhohisData) : [];
     const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
     res.render("verifyPanitLt1Dashboard", { sapi: resultSapi, kambing: resultKambing, currentUser, firebaseConfig: { apiKey: firebaseConfig.apiKey, authDomain: firebaseConfig.authDomain, projectId: firebaseConfig.projectId, storageBucket: firebaseConfig.storageBucket, messagingSenderId: firebaseConfig.messagingSenderId, appId: firebaseConfig.appId, measurementId: firebaseConfig.measurementId, databaseURL: process.env.DATABASE_URL } });
 }
 
 module.exports.getVerifyPanitLt2Dashboard = async (req, res) => {
     const currentUser = res.locals.user;
-    const sapi = await SapiModel.getAllSapi();
-    const kambing = await KambingModel.getAllKambing();
-    const resultSapi = sapi ? await transformData(sapi) : [];
-    const resultKambing = kambing ? await transformKambingData(kambing) : [];
+    const [sapi, kambing] = await Promise.all([SapiModel.getAllSapi(), KambingModel.getAllKambing()]);
+    const { mudhohisData } = await fetchMudhohiMaps();
+    const resultSapi = sapi ? await transformData(sapi, mudhohisData) : [];
+    const resultKambing = kambing ? await transformKambingData(kambing, mudhohisData) : [];
     const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
     res.render("verifyPanitLt2Dashboard", { sapi: resultSapi, kambing: resultKambing, currentUser, firebaseConfig: { apiKey: firebaseConfig.apiKey, authDomain: firebaseConfig.authDomain, projectId: firebaseConfig.projectId, storageBucket: firebaseConfig.storageBucket, messagingSenderId: firebaseConfig.messagingSenderId, appId: firebaseConfig.appId, measurementId: firebaseConfig.measurementId, databaseURL: process.env.DATABASE_URL } });
 }
 
 module.exports.getVerifyPanitLt3Dashboard = async (req, res) => {
     const currentUser = res.locals.user;
-    const sapi = await SapiModel.getAllSapi();
-    const kambing = await KambingModel.getAllKambing();
-    const resultSapi = sapi ? await transformData(sapi) : [];
-    const resultKambing = kambing ? await transformKambingData(kambing) : [];
+    const [sapi, kambing] = await Promise.all([SapiModel.getAllSapi(), KambingModel.getAllKambing()]);
+    const { mudhohisData } = await fetchMudhohiMaps();
+    const resultSapi = sapi ? await transformData(sapi, mudhohisData) : [];
+    const resultKambing = kambing ? await transformKambingData(kambing, mudhohisData) : [];
     const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
     res.render("verifyPanitLt3Dashboard", { sapi: resultSapi, kambing: resultKambing, currentUser, firebaseConfig: { apiKey: firebaseConfig.apiKey, authDomain: firebaseConfig.authDomain, projectId: firebaseConfig.projectId, storageBucket: firebaseConfig.storageBucket, messagingSenderId: firebaseConfig.messagingSenderId, appId: firebaseConfig.appId, measurementId: firebaseConfig.measurementId, databaseURL: process.env.DATABASE_URL } });
 }
 
 module.exports.getVerifyMudhohiDashboard = async (req, res) => {
     const currentUser = res.locals.user;
-    const sapi = await SapiModel.getAllSapi();
-    const kambing = await KambingModel.getAllKambing();
-    const resultSapi = sapi ? await transformData(sapi) : [];
-    const resultKambing = kambing ? await transformKambingData(kambing) : [];
+    const [sapi, kambing] = await Promise.all([SapiModel.getAllSapi(), KambingModel.getAllKambing()]);
+    const { mudhohisData } = await fetchMudhohiMaps();
+    const resultSapi = sapi ? await transformData(sapi, mudhohisData) : [];
+    const resultKambing = kambing ? await transformKambingData(kambing, mudhohisData) : [];
     const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
     res.render("verifyMudhohiDashboard", { sapi: resultSapi, kambing: resultKambing, currentUser, firebaseConfig: { apiKey: firebaseConfig.apiKey, authDomain: firebaseConfig.authDomain, projectId: firebaseConfig.projectId, storageBucket: firebaseConfig.storageBucket, messagingSenderId: firebaseConfig.messagingSenderId, appId: firebaseConfig.appId, measurementId: firebaseConfig.measurementId, databaseURL: process.env.DATABASE_URL } });
 }
@@ -284,8 +300,23 @@ module.exports.postAdmin = async (req, res) => {
 // Gambar dikembalikan sebagai URL string, diproses di sisi client menjadi Excel
 module.exports.getSnapshotData = async (req, res) => {
     try {
-        const sapiRaw = await SapiModel.getAllSapi();
-        const kambingRaw = await KambingModel.getAllKambing();
+        const [sapiRaw, kambingRaw, mudhohisSnap, usersSnap] = await Promise.all([
+            SapiModel.getAllSapi(),
+            KambingModel.getAllKambing(),
+            database.ref('mudhohis').once('value'),
+            database.ref('users').once('value')
+        ]);
+
+        const mudhohisData = mudhohisSnap.val() || {};
+        const usersData    = usersSnap.val() || {};
+
+        // Bangun map mudhohiId → nama user
+        const mudhohiNameMap = {};
+        for (const uid in usersData) {
+            const u = usersData[uid];
+            if (u.mudhohiId) mudhohiNameMap[u.mudhohiId] = u.name || '';
+        }
+
         const allRows = [];
 
         // --- Proses data sapi ---
@@ -297,23 +328,16 @@ module.exports.getSnapshotData = async (req, res) => {
                     if (key !== 'foto' && key !== 'state' && typeof sapi[key] === 'object') {
                         hasMudhohi = true;
                         const mudhohiData = sapi[key];
-                        const mudhohiObj = await MudhohiModel.getMudhohiById(key);
-                        const userSnapshot = await database.ref('users').orderByChild('mudhohiId').equalTo(key).once('value');
-                        let namaUser = '';
-                        if (userSnapshot.exists()) {
-                            const userData = userSnapshot.val();
-                            const firstKey = Object.keys(userData)[0];
-                            namaUser = userData[firstKey].name || '';
-                        }
+                        const mudhohiObj  = mudhohisData[key] || {};
                         allRows.push({
                             jenis: 'Sapi',
                             noHewan: idSapi,
                             state: sapi.state || '',
                             fotoHewan: sapi.foto || '',
                             idMudhohi: key,
-                            namaMudhohi: namaUser,
-                            alamat: mudhohiObj ? (mudhohiObj.alamat || '') : '',
-                            noHP: mudhohiObj ? (mudhohiObj.noHP || '') : '',
+                            namaMudhohi: mudhohiNameMap[key] || '',
+                            alamat: mudhohiObj.alamat || '',
+                            noHP: mudhohiObj.noHP || '',
                             isDelivered: mudhohiData.isDelivered ? 'Ya' : 'Tidak',
                             isPostponed: mudhohiData.isPostponed ? 'Ya' : 'Tidak',
                             bukti: mudhohiData.bukti || '',
@@ -323,18 +347,9 @@ module.exports.getSnapshotData = async (req, res) => {
                 }
                 if (!hasMudhohi) {
                     allRows.push({
-                        jenis: 'Sapi',
-                        noHewan: idSapi,
-                        state: sapi.state || '',
-                        fotoHewan: sapi.foto || '',
-                        idMudhohi: '',
-                        namaMudhohi: '',
-                        alamat: '',
-                        noHP: '',
-                        isDelivered: '',
-                        isPostponed: '',
-                        bukti: '',
-                        usernamePengirim: ''
+                        jenis: 'Sapi', noHewan: idSapi, state: sapi.state || '',
+                        fotoHewan: sapi.foto || '', idMudhohi: '', namaMudhohi: '',
+                        alamat: '', noHP: '', isDelivered: '', isPostponed: '', bukti: '', usernamePengirim: ''
                     });
                 }
             }
@@ -349,23 +364,16 @@ module.exports.getSnapshotData = async (req, res) => {
                     if (key !== 'foto' && key !== 'state' && typeof kambing[key] === 'object') {
                         hasMudhohi = true;
                         const mudhohiData = kambing[key];
-                        const mudhohiObj = await MudhohiModel.getMudhohiById(key);
-                        const userSnapshot = await database.ref('users').orderByChild('mudhohiId').equalTo(key).once('value');
-                        let namaUser = '';
-                        if (userSnapshot.exists()) {
-                            const userData = userSnapshot.val();
-                            const firstKey = Object.keys(userData)[0];
-                            namaUser = userData[firstKey].name || '';
-                        }
+                        const mudhohiObj  = mudhohisData[key] || {};
                         allRows.push({
                             jenis: 'Kambing',
                             noHewan: idKambing,
                             state: kambing.state || '',
                             fotoHewan: kambing.foto || '',
                             idMudhohi: key,
-                            namaMudhohi: namaUser,
-                            alamat: mudhohiObj ? (mudhohiObj.alamat || '') : '',
-                            noHP: mudhohiObj ? (mudhohiObj.noHP || '') : '',
+                            namaMudhohi: mudhohiNameMap[key] || '',
+                            alamat: mudhohiObj.alamat || '',
+                            noHP: mudhohiObj.noHP || '',
                             isDelivered: mudhohiData.isDelivered ? 'Ya' : 'Tidak',
                             isPostponed: mudhohiData.isPostponed ? 'Ya' : 'Tidak',
                             bukti: mudhohiData.bukti || '',
@@ -375,18 +383,9 @@ module.exports.getSnapshotData = async (req, res) => {
                 }
                 if (!hasMudhohi) {
                     allRows.push({
-                        jenis: 'Kambing',
-                        noHewan: idKambing,
-                        state: kambing.state || '',
-                        fotoHewan: kambing.foto || '',
-                        idMudhohi: '',
-                        namaMudhohi: '',
-                        alamat: '',
-                        noHP: '',
-                        isDelivered: '',
-                        isPostponed: '',
-                        bukti: '',
-                        usernamePengirim: ''
+                        jenis: 'Kambing', noHewan: idKambing, state: kambing.state || '',
+                        fotoHewan: kambing.foto || '', idMudhohi: '', namaMudhohi: '',
+                        alamat: '', noHP: '', isDelivered: '', isPostponed: '', bukti: '', usernamePengirim: ''
                     });
                 }
             }

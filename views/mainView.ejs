@@ -237,19 +237,32 @@
         }
       }
 
+      // ── Cache helper: fetch mudhohis + users SEKALI, lookup dari map ──
+      async function fetchMudhohiCache() {
+        const [mudhohisSnap, usersSnap] = await Promise.all([
+          database.ref("mudhohis/").once("value"),
+          database.ref("users/").once("value")
+        ]);
+        const mudhohisData = mudhohisSnap.val() || {};
+        const usersData    = usersSnap.val() || {};
+        const mudhohiNameMap = {};
+        for (const uid in usersData) {
+          const u = usersData[uid];
+          if (u.mudhohiId) mudhohiNameMap[u.mudhohiId] = u.name || null;
+        }
+        return { mudhohisData, mudhohiNameMap };
+      }
+
       async function transformHewan(sapiData, kambingData) {
         const result = [];
+        const { mudhohisData, mudhohiNameMap } = await fetchMudhohiCache();
         if (sapiData) {
           for (const id in sapiData) {
             const h = sapiData[id];
             const obj = { idHewan: id, jenis: 'sapi', state: h.state, mudhohi: [] };
             for (const key in h) {
               if (key !== 'foto' && key !== 'state' && typeof h[key] === 'object') {
-                const mudhohiObj = await database.ref("mudhohis/" + key).once("value").then(s => s.val());
-                const userObj = await database.ref("users/").orderByChild("mudhohiId").equalTo(key).once("value").then(s => {
-                  const d = s.val(); if (d) { const k = Object.keys(d)[0]; return d[k].name; } return null;
-                });
-                obj.mudhohi.push({ idMudhohi: key, ...mudhohiObj, name: userObj });
+                obj.mudhohi.push({ idMudhohi: key, ...(mudhohisData[key] || {}), name: mudhohiNameMap[key] || null });
               }
             }
             result.push(obj);
@@ -261,11 +274,7 @@
             const obj = { idHewan: id, jenis: 'kambing', state: h.state, mudhohi: [] };
             for (const key in h) {
               if (key !== 'foto' && key !== 'state' && typeof h[key] === 'object') {
-                const mudhohiObj = await database.ref("mudhohis/" + key).once("value").then(s => s.val());
-                const userObj = await database.ref("users/").orderByChild("mudhohiId").equalTo(key).once("value").then(s => {
-                  const d = s.val(); if (d) { const k = Object.keys(d)[0]; return d[k].name; } return null;
-                });
-                obj.mudhohi.push({ idMudhohi: key, ...mudhohiObj, name: userObj });
+                obj.mudhohi.push({ idMudhohi: key, ...(mudhohisData[key] || {}), name: mudhohiNameMap[key] || null });
               }
             }
             result.push(obj);
@@ -274,7 +283,7 @@
         return result;
       }
 
-      function areArraysEqual(a, b) {
+            function areArraysEqual(a, b) {
         if (a.length !== b.length) return false;
         const sa = a.slice().sort(), sb = b.slice().sort();
         return sa.every((v, i) => v === sb[i]);
