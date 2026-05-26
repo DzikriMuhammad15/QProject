@@ -284,7 +284,17 @@
           const hewanObj = { idSapi: idHewan, foto: hewan.foto, state: hewan.state, mudhohi: [] };
           for (const key in hewan) {
             if (key !== 'foto' && key !== 'state' && typeof hewan[key] === 'object') {
-              hewanObj.mudhohi.push({ idMudhohi: key, ...(mudhohisData[key] || {}), name: mudhohiNameMap[key] || null });
+              // Ambil data delivery (isDelivered, isPostponed, bukti, usernamePengirim) dari node hewan[key]
+              const deliveryData = hewan[key];
+              hewanObj.mudhohi.push({
+                idMudhohi: key,
+                ...(mudhohisData[key] || {}),
+                name: mudhohiNameMap[key] || null,
+                isDelivered: deliveryData.isDelivered || false,
+                isPostponed: deliveryData.isPostponed || false,
+                bukti: deliveryData.bukti || '',
+                usernamePengirim: deliveryData.usernamePengirim || ''
+              });
             }
           }
           result.push(hewanObj);
