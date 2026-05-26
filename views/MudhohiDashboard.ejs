@@ -96,7 +96,18 @@
                       <th>Bukti</th>
                     </tr>
                   </thead>
-                  <tbody id="bodyTabel"></tbody>
+                  <tbody id="bodyTabel">
+                    <tr id="skeletonRow">
+                      <td colspan="4" class="text-center text-muted py-4">
+                        <div class="skeleton-memuat" style="justify-content:center;">
+                          <div class="skeleton-memuat-dot"></div>
+                          <div class="skeleton-memuat-dot"></div>
+                          <div class="skeleton-memuat-dot"></div>
+                          <span>Memuat data, harap tunggu...</span>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
                 </table>
               </div>
             </div>
@@ -240,6 +251,9 @@
 
         // ─── Helper: update atau insert baris tabel ─────────────────
         function updateRow(rowId, jenis, noHewan, data) {
+          // Hapus skeleton row saat data pertama kali tiba
+          const skeletonRow = document.getElementById('skeletonRow');
+          if (skeletonRow) skeletonRow.remove();
           const bodyTabel = document.getElementById('bodyTabel');
           let tr = document.getElementById(rowId);
           if (!tr) {
